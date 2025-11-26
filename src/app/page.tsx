@@ -13,7 +13,7 @@ export default function Home() {
         <section className="py-20">
           <h1 className="text-5xl font-bold mb-6 tracking-tight">
             안녕하세요, <br />
-            개발자 <span className="text-blue-600">OOO</span>입니다.
+            개발자 <span className="text-blue-600">김창주</span>입니다.
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
             사용자 경험을 중요하게 생각하는 프론트엔드 개발자입니다.
