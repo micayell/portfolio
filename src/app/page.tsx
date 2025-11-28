@@ -1,5 +1,5 @@
 import Header from "@/components/ui/Header";
-import ProjectCard from "@/components/ui/ProjectCard";
+import ProjectCarousel from "@/components/ui/ProjectCarousel";
 import { projects } from "@/data/projects";
 
 export default function Home() {
@@ -28,14 +28,9 @@ export default function Home() {
             Projects
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                {...project}
-              />
-            ))}
-          </div>
+          {/* 기존 Grid 대신 Carousel 컴포넌트 사용 */}
+          <ProjectCarousel projects={projects} />
+          
         </section>
       </main>
     </div>
