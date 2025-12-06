@@ -1,7 +1,20 @@
 export const skills = {
-    "Programming": ["Python", "JAVA", "C/C++"],
-    "Front-End": ["React", "React-Native", "TypeScript", "Vue", "JavaScript", "HTML/CSS", "Bootstrap"],
-    "Back-End": ["Django", "Spring Boot"],
-    "Data & DB": ["R", "SAS", "SPSS", "MySQL", "PostgreSQL", "MongoDB"],
-    "Infra & Tools": ["AWS EC2", "Docker", "Nginx", "Git/GitHub", "Jira", "Figma"]
-  };
+  Programming: ["Python", "JAVA", "C/C++"],
+  "Front-End": [
+    "React",
+    "Next.js",
+    "React-Native",
+    "TypeScript",
+    "Vue",
+    "JavaScript",
+    "Tailwind CSS",
+    "HTML/CSS",
+    "Bootstrap",
+  ],
+  "Back-End": ["Django", "Spring Boot"],
+  Database: ["MySQL", "PostgreSQL", "MongoDB"],
+  "Data Analysis": ["R", "SAS", "SPSS"],
+  Infra: ["AWS EC2", "AWS S3", "Docker", "Nginx", "GitHub Actions"],
+  Collaboration: ["Notion", "Git/GitHub", "Jira", "Postman", "Swagger"],
+  "UI/UX": ["Figma"],
+};
