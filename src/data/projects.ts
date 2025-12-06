@@ -36,7 +36,7 @@ export const projects: Project[] = [
     ]
   },
   
-  // ▼ PlatePay 프로젝트 추가
+  // ▼ PlatePay 프로젝트 수정
   {
     id: "platepay",
     title: "PlatePay",
@@ -45,120 +45,161 @@ export const projects: Project[] = [
     thumbnailUrl: "/images/platepay/thumbnail.png", 
     
     overview: {
-      goal: "지갑/스마트폰 없이 '빈손'으로 결제 가능한 드라이브스루/주차장 통합 결제 플랫폼 구축",
-      background: "드라이브스루/주차장 결제 시의 불편함과 안전 사고 위험을 해소하고 결제 시간을 단축하기 위함.",
-      role: "Frontend Developer (Mobile App, Web Kiosk), UI/UX 디자인 - 기여도 60%",
+      goal: "차량 제조사/연식 무관, '빈손'으로 결제 가능한 범용 간편결제 솔루션 구축",
+      background: "드라이브스루/주차장 결제 시의 불편함 해소 및 자동 결제 시스템 구현",
+      role: "Frontend Developer (Mobile App, Web Kiosk) - 기여도 60%",
       period: "2025.08.25 - 2025.09.29",
-      members: "백엔드 3, 프론트 2, AI 1",
+      members: "6인 (Back 3, Front 2, AI 1)",
     },
     
     skills: [
-      { name: "React Native", reason: "iOS/Android 동시 배포 생산성 및 Vision Camera 등 네이티브 모듈 활용 용이" },
-      { name: "Zustand", reason: "Redux 대비 적은 보일러플레이트와 직관적인 API로 복잡한 상태 효율적 관리" },
-      { name: "TypeScript", reason: "결제 정보 등 민감 데이터 처리를 위한 정적 타입 검사로 런타임 에러 방지" },
-      { name: "face-api.js", reason: "서버 통신 없이 클라이언트(키오스크) 단에서 빠른 안면 인식 피드백 제공" }
+      { name: "React Native", reason: "하이브리드 앱 개발 및 WebView 연동" },
+      { name: "TypeScript", reason: "정적 타입 검사를 통한 결제 로직 안정성 확보" },
+      { name: "Zustand", reason: "전역 상태 관리 (사용자 정보, 결제 상태 등)" },
+      { name: "FCM", reason: "결제 알림 등 푸시 메시지 기능 구현" }
     ],
     
     features: [
-      { title: "앱: 사용자 친화적 기능", description: "OCR 기반 차량 등록, 도메인별 모듈화 설계, 소비 패턴 시각화(Skia)" },
-      { title: "키오스크: 직관적 결제", description: "실시간 차량 조회(Debouncing), 웹캠 안면 인식 결제, 비밀번호 결제" }
+      { title: "하이브리드 인증 시스템", description: "WebView 활용 OAuth 2.0 소셜 로그인(SSAFY, 카카오) 및 회원가입" },
+      { title: "차량 등록 프로세스", description: "Codef API 및 카카오 인증 연동을 통한 실소유주 검증 및 차량 등록" },
+      { title: "은행 채널계 프로세스", description: "1원 계좌 인증 시각화 및 은행 계좌 앱/키오스크 결제 구현" }
     ],
     
     troubleShooting: [
       {
-        problem: "백엔드 API 응답 포맷(DTO vs Primitive)의 불규칙한 변경으로 인한 잦은 에러",
-        solution: "API 계층에 Adapter Pattern 및 방어 코드 적용, Mock Data 폴백 메커니즘 구축",
-        result: "백엔드 수정 없이 프론트엔드 안정성 확보 및 성공적인 데모 시연"
+        problem: "OAuth 로그인 시 WebView 쿠키/캐시 잔존 문제",
+        solution: "WebView 세션 관리 로직 개선 및 로그아웃 시 클리어 처리",
+        result: "보안성 강화 및 로그인/회원가입 UX 개선"
+      },
+      {
+        problem: "React Native 라이브러리 의존성 충돌",
+        solution: "버전 호환성 검토 및 의존성 정리",
+        result: "개발 환경 안정화 및 빌드 오류 해결"
+      },
+      {
+        problem: "백엔드 연동 이슈",
+        solution: "RESTful API 연동을 통한 데이터 처리 로직 구현",
+        result: "원활한 데이터 통신 및 서비스 기능 정상화"
       }
     ]
   },
+
+  // ▼ SMARTWINDOW 프로젝트 수정
   {
-    id: "bankinsight",
-    title: "BankInsight",
-    description: "사용자 금융 성향 분석 기반 맞춤형 금융 상품 추천 및 자산 관리 서비스",
-    tags: ["Vue.js", "Django", "Python", "OpenAI API"],
-    thumbnailUrl: "/images/bank-insight/thumbnail.png", // 썸네일 이미지 경로 (추후 추가 필요)
+    id: "smartwindow",
+    title: "SMARTWINDOW",
+    description: "디지털 디스플레이를 활용한 스마트 창문 시스템",
+    tags: ["React Native", "TypeScript", "TanStack Query", "IoT"],
+    // thumbnailUrl: "/images/smartwindow/thumbnail.png", // 이미지 필요 시 주석 해제
     
     overview: {
-      goal: "사용자 금융 프로필 및 데이터를 분석하여 최적의 금융 상품을 추천하고 정보 공유 커뮤니티 제공",
-      background: "시중의 수많은 금융 상품을 일일이 비교하기 어렵고, 개별 자산 관리를 원하는 사용자들의 니즈를 충족시키기 위함",
-      role: "BackEnd 및 FrontEnd 개발, UX/UI 디자인 (팀원 2명)",
-      period: "2025.05.22 ~ 2025.05.28",
+      goal: "창문의 물리적 제약(벽 뷰, 사생활 침해)을 디지털 기술로 해결하고 새로운 공간 경험 제공",
+      background: "답답한 뷰 대신 개방감과 감성적인 뷰로 전환하고, 사용자와 공간이 상호작용하는 미래형 스마트 홈 디바이스 제시",
+      role: "FE(APP) 개발, BE 기능 일부 개발(OAuth, User, Token)",
+      period: "2025.10.13 - 2025.11.20",
+      members: "6인 (BE 1, APP 1, QT 2, HW 1, AI 1)",
+    },
+    
+    skills: [
+      { name: "React Native", reason: "모바일 앱 기반 창문 제어 인터페이스 구현" },
+      { name: "TanStack Query", reason: "서버 상태 관리 및 데이터 캐싱 효율화" },
+      { name: "BLE (Bluetooth)", reason: "스마트 윈도우 하드웨어와의 근거리 무선 통신 구현" },
+      { name: "FCM", reason: "푸시 알림 서비스 연동" }
+    ],
+    
+    features: [
+      { title: "IoT 기기 제어", description: "BLE 통신 기반 스마트 윈도우 개폐 제어 및 상태 동기화" },
+      { title: "생성형 AI 서비스", description: "촬영 이미지 기반 시간대별(밤/낮/노을) 분위기 변환 및 객체 제거" },
+      { title: "스마트 알람", description: "하드웨어 타이머 연동을 통한 예약된 시간 작동 기능" },
+      { title: "인증 및 알림", description: "OAuth 2.0(구글, 카카오, 네이버) 로그인 및 FCM 푸시 알림" }
+    ],
+    
+    troubleShooting: [
+      {
+        problem: "앱과 임베디드 기기 간의 통신 프로토콜 정의 및 연동 난이도",
+        solution: "HW-SW 인터페이스 최적화를 통해 IoT 서비스의 E2E 흐름 체득",
+        result: "안정적인 기기 제어 및 상태 동기화 구현"
+      },
+      {
+        problem: "React Native 버전 업그레이드 및 라이브러리 의존성 충돌",
+        solution: "공식 문서 리딩을 통한 버전 호환성 검토 및 문제 해결",
+        result: "개발 환경 안정화 및 빌드 성공"
+      }
+    ]
+  },
+
+  // ▼ YOLO Bring it 프로젝트 추가
+  {
+    id: "yolo-bring-it",
+    title: "YOLO Bring it",
+    description: "WebRTC 기반 실시간 화상 인터랙티브 게임 서비스",
+    tags: ["React", "Three.js", "WebRTC", "Zustand"],
+    githubUrl: "https://github.com/micayell/YOLO-Bring-it",
+    // thumbnailUrl: "/images/yolo/thumbnail.png", // 이미지 준비 필요
+    
+    overview: {
+      goal: "화상 연결을 통해 친구들과 함께 즐기는 인터랙티브 게임 경험 제공",
+      background: "비대면 환경에서도 실감 나는 소통과 재미를 제공하기 위함",
+      role: "FrontEnd 개발, UX/UI 디자인",
+      period: "진행 기간 미상", // 이력서에 구체적 기간 없음
+      members: "팀 프로젝트",
+    },
+    
+    skills: [
+      { name: "React & Three.js", reason: "웹 기반 3D 그래픽 및 인터랙티브 UI 구현" },
+      { name: "WebRTC & Livekit", reason: "실시간 화상 통신 및 데이터 전송 구현" },
+      { name: "Zustand", reason: "글로벌 상태 관리" }
+    ],
+    
+    features: [
+      { title: "AI 미니게임", description: "표정과 움직임으로 즐기는 인터랙티브 게임 (YOLOV8, DeepFace 활용)" },
+      { title: "3D 캐릭터 & 커뮤니티", description: "개성 있는 3D 캐릭터 커스터마이징 및 랭킹/친구 시스템" }
+    ],
+    
+    troubleShooting: [
+      {
+        problem: "복잡한 실시간 통신 아키텍처 구현 난이도",
+        solution: "MSA 아키텍처 적용 및 Livekit 클라우드 활용",
+        result: "안정적인 화상 통신 및 게임 데이터 동기화 구현"
+      }
+    ]
+  },
+
+  // ▼ BankInsight 프로젝트 추가
+  {
+    id: "bank-insight",
+    title: "BankInsight",
+    description: "AI 기반 금융 로보어드바이저 웹 애플리케이션",
+    tags: ["Python", "Django", "Vue.js", "OpenAI"],
+    githubUrl: "https://lab.ssafy.com/micayell98/final-pjt",
+    // thumbnailUrl: "/images/bankinsight/thumbnail.png", // 이미지 준비 필요
+    
+    overview: {
+      goal: "사용자 성향 분석 기반 맞춤형 금융 상품 추천 및 포트폴리오 제공",
+      background: "복잡한 금융 상품 정보를 쉽게 비교하고 개인화된 추천을 받기 위함",
+      role: "Backend 전담 (Django REST API, OpenAI 연동)",
+      period: "2025.05 - 2025.06",
       members: "2인 프로젝트",
     },
     
     skills: [
-      { name: "Vue.js", reason: "컴포넌트 기반의 직관적인 UI 구축과 SPA(Single Page Application) 개발을 위해 선택" },
-      { name: "Django", reason: "Python 기반의 강력한 ORM과 보안 기능을 제공하여 안정적인 백엔드 API 서버 구축 용이" },
-      { name: "Pinia", reason: "Vue.js 애플리케이션의 전역 상태 관리를 효율적으로 처리하기 위함" },
-      { name: "OpenAI API", reason: "GPT-4o-mini 모델을 활용하여 개인 맞춤형 금융 상담 챗봇 기능을 구현하기 위해 도입" }
+      { name: "Django & DRF", reason: "RESTful API 서버 구축 및 금융 데이터 처리" },
+      { name: "OpenAI API", reason: "챗봇 형태의 지능형 금융 상담 기능 구현" },
+      { name: "Vue.js & Pinia", reason: "프론트엔드 구현 및 상태 관리 (협업)" }
     ],
     
     features: [
-      { title: "AI 금융 챗봇", description: "GPT-4o-mini 기반으로 개인 맞춤형 금융 상담 및 상품 추천 대화 기능 제공" },
-      { title: "맞춤형 상품 추천", description: "사용자 금융 정보 및 유사 사용자/연령대 데이터를 기반으로 최적의 예/적금 상품 추천" },
-      { title: "지도 기반 은행 찾기", description: "카카오맵 API를 연동하여 현재 위치 또는 지역별 은행 지점 검색 기능" },
-      { title: "금융 상품 비교", description: "기간별 금리 비교 차트 제공 및 은행별 상품 상세 검색 지원" }
+      { title: "AI 금융 상담 챗봇", description: "자연어 처리를 통한 금융 상품 추천 및 상담" },
+      { title: "맞춤형 포트폴리오", description: "사용자 성향(공격/안전 등)에 따른 자산 구성 제안" },
+      { title: "지도 기반 은행 검색", description: "위치 기반 주변 은행 찾기 서비스" }
     ],
     
     troubleShooting: [
       {
-        problem: "복잡한 금융 상품 데이터의 효율적인 비교 및 시각화",
-        solution: "Chart.js 라이브러리를 활용하여 기간별 금리 변화를 시각적으로 표현하고, 필터링 기능을 고도화함",
-        result: "사용자가 직관적으로 상품 간의 금리 차이를 비교하고 원하는 조건의 상품을 빠르게 찾을 수 있게 됨"
+        problem: "단순 기능 구현을 넘어선 실질적 가치 제공 고민",
+        solution: "사용자 중심 요구사항 재구성 및 외부 API(OpenAI) 적극 활용",
+        result: "완성도 높은 금융 서비스 구현 및 문제 해결 역량 향상"
       }
-    ],
-
-    // 성과/회고 내용은 상세 페이지 하단이나 별도 섹션에 보여줄 수 있도록 추가 필드가 필요할 수 있음 (일단 overview 등에 녹여냄)
-  },
-  {
-    id: "yolo-bring-it",
-    title: "YOLO Bring it!",
-    description: "LiveKit 기반 실시간 화상 인터랙티브 미니게임 플랫폼",
-    tags: ["React", "TypeScript", "Three.js", "LiveKit"],
-    thumbnailUrl: "/images/yolo-bring-it/thumbnail.png",
-    
-    overview: {
-      goal: "LiveKit을 활용하여 자신의 표정과 움직임으로 즐기는 인터랙티브 게임 플랫폼 개발",
-      background: "단순한 화상 통화를 넘어, 사용자들이 더욱 몰입감 있고 활발하게 교류할 수 있는 새로운 소셜 게이밍 경험을 제공하고자 함",
-      role: "Front-End 개발, UI/UX 디자인, 실시간 상태 관리 로직 구현",
-      period: "2025.07.07 ~ 2025.08.18 (7주)",
-      members: "6인 프로젝트 (FE 2, BE 3, AI 1)",
-    },
-    
-    skills: [
-      { name: "React", reason: "컴포넌트 기반 UI 구축과 생태계가 풍부하여 복잡한 게임 UI를 효율적으로 개발하기 위해 선택" },
-      { name: "LiveKit", reason: "WebRTC 기반의 안정적인 실시간 화상/음성 통신을 저지연으로 구현하기 위해 도입" },
-      { name: "Three.js", reason: "웹 브라우저상에서 고성능 3D 캐릭터와 환경을 렌더링하기 위해 사용" },
-      { name: "Tailwind CSS", reason: "빠른 스타일링과 반응형 레이아웃을 손쉽게 구현하기 위해 선택" },
-      { name: "Zustand", reason: "Redux보다 가볍고 직관적인 전역 상태 관리 라이브러리로 게임 상태를 효율적으로 관리" }
-    ],
-    
-    features: [
-      { title: "인터랙티브 미니게임", description: "AI(YOLOv8, DeepFace)가 표정과 움직임을 인식하여 진행하는 실시간 화상 게임" },
-      { title: "3D 캐릭터 시스템", description: "Three.js를 활용한 개성 넘치는 3D 아바타 및 애니메이션 구현" },
-      { title: "소셜 커뮤니티", description: "실시간 랭킹, 칭호, 업적 시스템을 통해 사용자 간 경쟁과 협력 유도" },
-      { title: "아이템 상점", description: "게임 재화로 아이템을 구매하고 캐릭터를 꾸밀 수 있는 상점 시스템" }
-    ],
-    
-    troubleShooting: [
-      {
-        problem: "실시간 게임 상태 동기화 지연 문제",
-        solution: "STOMPjs 기반의 웹소켓 통신과 Zustand를 결합하여 게임 상태를 실시간으로 전파하고, Optimistic UI 업데이트 적용",
-        result: "다수의 사용자가 참여하는 환경에서도 끊김 없는 부드러운 게임 플레이 경험 제공"
-      },
-      {
-        problem: "복잡한 3D 모델 로딩 속도 이슈",
-        solution: "Three.js 모델 경량화 및 Lazy Loading 적용, 주요 에셋 프리로딩 전략 사용",
-        result: "초기 로딩 속도 40% 개선 및 렌더링 퍼포먼스 최적화"
-      }
-    ],
-    
-    // 이미지가 많으므로 상세 페이지에서 보여줄 이미지 경로들 (나중에 파일 넣으세요)
-    images: [
-       "/images/yolo/game-play.png",
-       "/images/yolo/character.png",
-       "/images/yolo/store.png"
     ]
   }
 ];
