@@ -128,7 +128,7 @@ export const projects: Project[] = [
   {
     id: "smartwindow",
     title: "SMARTWINDOW",
-    description: "디지털 디스플레이를 활용한 스마트 창문 시스템",
+    description: "창문형 디스플레이를 활용한 스마트 창문 시스템",
     tags: ["React Native", "TypeScript", "TanStack Query", "IoT"],
     githubUrl: "https://github.com/S13P31C101/smart-window",
     award: "특화 프로젝트 우수상",
