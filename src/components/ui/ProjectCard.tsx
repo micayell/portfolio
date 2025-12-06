@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image'; // Image 컴포넌트 import
 import { Project } from '@/types/project';
+import { getImagePath } from '@/lib/utils'; // 👈 import 추가
 
 type ProjectProps = Pick<Project, "id" | "title" | "description" | "tags" | "thumbnailUrl">;
 
@@ -14,7 +15,7 @@ export default function ProjectCard({ id, title, description, tags, thumbnailUrl
       <div className="relative w-full h-48 bg-gray-100 dark:bg-zinc-800">
         {thumbnailUrl ? (
           <Image
-            src={thumbnailUrl}
+            src={getImagePath(thumbnailUrl)} // 👈 여기 수정!
             alt={title}
             fill
             className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" // cover -> contain 변경

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { profile, education, awards } from "@/data/about"; // 데이터 import
 import { GraduationCap, Trophy } from "lucide-react"; // 아이콘 import
+import { getImagePath } from "@/lib/utils"; // 👈 import 추가
 
 export default function About() {
   return (
@@ -11,7 +12,7 @@ export default function About() {
         <div className="w-full md:w-1/3 flex flex-col items-center">
           <div className="relative w-64 h-80 rounded-xl overflow-hidden shadow-2xl mb-6">
             <Image 
-              src="/images/profile.jpg" // 증명사진 경로
+              src={getImagePath("/images/profile.jpg")} // 👈 여기 수정!
               alt="김창주" 
               fill 
               className="object-cover"
