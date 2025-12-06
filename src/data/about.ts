@@ -2,7 +2,6 @@ export const profile = {
     name: "김창주",
     role: "Front-end Developer",
     email: "micayell98@naver.com",
-    // phone: "010-9675-9698",
     github: "https://github.com/micayell",
     // birth: "1998.09.21",
     description: [
@@ -15,8 +14,8 @@ export const profile = {
   export const education = [
     {
       school: "삼성청년 SW•AI 아카데미",
-      period: "2025.01 ~ 2025.05",
-      desc: "1학기 수료 (코딩 집중과정 820시간)"
+      period: "2025.01 ~ 2025.12",
+      desc: "13기 수료 (코딩 집중과정 820시간, )"
     },
     {
       school: "전남대학교 (산업공학)",

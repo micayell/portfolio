@@ -6,6 +6,8 @@ export interface Project {
     thumbnailUrl?: string;
     githubUrl?: string;
     demoUrl?: string;
+    award?: string;
+    figmaUrl?: string;
 
     overview: {
         goal: string;

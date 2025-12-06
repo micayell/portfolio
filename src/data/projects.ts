@@ -6,6 +6,7 @@ export const projects: Project[] = [
     title: "개발자 포트폴리오",
     description: "Next.js 기반 정적 웹사이트",
     tags: ["Next.js", "TypeScript", "Tailwind"],
+    githubUrl: "https://github.com/micayell/portfolio",
     thumbnailUrl: "/images/portfolio/thumbnail.png",
     
     overview: {
@@ -42,7 +43,9 @@ export const projects: Project[] = [
     title: "PlatePay",
     description: "차량 번호판 및 안면 인식 기반 간편 결제 서비스",
     tags: ["React Native", "React", "TypeScript", "Zustand"],
-    thumbnailUrl: "/images/platepay/thumbnail.png", 
+    githubUrl: "https://github.com/micayell/Plate-Pay",
+    award: "자율 프로젝트 우수상",
+    thumbnailUrl: "/images/platepay/thumbnail.png",
     
     overview: {
       goal: "차량 제조사/연식 무관, '빈손'으로 결제 가능한 범용 간편결제 솔루션 구축",
@@ -90,7 +93,10 @@ export const projects: Project[] = [
     title: "SMARTWINDOW",
     description: "디지털 디스플레이를 활용한 스마트 창문 시스템",
     tags: ["React Native", "TypeScript", "TanStack Query", "IoT"],
-    // thumbnailUrl: "/images/smartwindow/thumbnail.png", // 이미지 필요 시 주석 해제
+    githubUrl: "https://github.com/S13P31C101/smart-window",
+    award: "특화 프로젝트 우수상",
+    thumbnailUrl: "/images/smartwindow/thumbnail.png",
+    figmaUrl: "https://www.figma.com/design/C48gQXKjWRSPIRSESz3Hy9/SMART_WINDOW?node-id=0-1&t=aJbPIdDlKUU1xwtS-1",
     
     overview: {
       goal: "창문의 물리적 제약(벽 뷰, 사생활 침해)을 디지털 기술로 해결하고 새로운 공간 경험 제공",
@@ -136,12 +142,13 @@ export const projects: Project[] = [
     tags: ["React", "Three.js", "WebRTC", "Zustand"],
     githubUrl: "https://github.com/micayell/YOLO-Bring-it",
     thumbnailUrl: "/images/yolo-bring-it/thumbnail.png", 
+    figmaUrl: "https://www.figma.com/design/Fk2VmugN9SOsjehUwyvQgg/SSAFY%EA%B3%B5%ED%86%B5%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8--%EA%B9%80%EC%B0%BD%EC%A3%BC-?node-id=40-2&t=ydZmbW4YFXgxjjBR-1",
     
     overview: {
       goal: "화상 연결을 통해 친구들과 함께 즐기는 인터랙티브 게임 경험 제공",
       background: "비대면 환경에서도 실감 나는 소통과 재미를 제공하기 위함",
       role: "FrontEnd 개발, UX/UI 디자인",
-      period: "진행 기간 미상", // 이력서에 구체적 기간 없음
+      period: "2025.07.07 ~ 2025.08.18",
       members: "팀 프로젝트",
     },
     

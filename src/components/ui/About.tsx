@@ -20,10 +20,10 @@ export default function About() {
           </div>
           
           <div className="w-full space-y-3 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex justify-between border-b pb-2 dark:border-gray-800">
+            {/* <div className="flex justify-between border-b pb-2 dark:border-gray-800">
               <span className="font-bold">Born</span>
-              <span>1998.09.21</span>
-            </div>
+              <span>{profile.birth}</span>
+            </div> */}
             {/* 전화번호 삭제됨 */}
             <div className="flex justify-between border-b pb-2 dark:border-gray-800">
               <span className="font-bold">Email</span>

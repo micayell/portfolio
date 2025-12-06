@@ -12,9 +12,9 @@ export const skills = {
     "Bootstrap",
   ],
   "Back-End": ["Django", "Spring Boot"],
-  Database: ["MySQL", "PostgreSQL", "MongoDB"],
+  Database: ["MySQL", "PostgreSQL", "MongoDB", "SQLite", "H2"],
   "Data Analysis": ["R", "SAS", "SPSS"],
   Infra: ["AWS EC2", "AWS S3", "Docker", "Nginx", "GitHub Actions"],
   Collaboration: ["Notion", "Git/GitHub", "Jira", "Postman", "Swagger"],
-  "UI/UX": ["Figma"],
+  "UI/UX": ["Figma", "Rive"],
 };
