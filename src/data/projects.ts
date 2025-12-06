@@ -135,7 +135,7 @@ export const projects: Project[] = [
     description: "WebRTC 기반 실시간 화상 인터랙티브 게임 서비스",
     tags: ["React", "Three.js", "WebRTC", "Zustand"],
     githubUrl: "https://github.com/micayell/YOLO-Bring-it",
-    // thumbnailUrl: "/images/yolo/thumbnail.png", // 이미지 준비 필요
+    thumbnailUrl: "/images/yolo-bring-it/thumbnail.png", 
     
     overview: {
       goal: "화상 연결을 통해 친구들과 함께 즐기는 인터랙티브 게임 경험 제공",
@@ -172,7 +172,7 @@ export const projects: Project[] = [
     description: "AI 기반 금융 로보어드바이저 웹 애플리케이션",
     tags: ["Python", "Django", "Vue.js", "OpenAI"],
     githubUrl: "https://lab.ssafy.com/micayell98/final-pjt",
-    // thumbnailUrl: "/images/bankinsight/thumbnail.png", // 이미지 준비 필요
+    thumbnailUrl: "/images/bank-insight/thumbnail.png", 
     
     overview: {
       goal: "사용자 성향 분석 기반 맞춤형 금융 상품 추천 및 포트폴리오 제공",
