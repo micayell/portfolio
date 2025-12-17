@@ -1,12 +1,12 @@
 export const skills = {
-  Programming: ["Python", "JAVA", "C/C++"],
+  Programming: ["Python", "JAVA", "C/C++", "JavaScript"],
   "Front-End": [
     "React",
     "Next.js",
     "React-Native",
     "TypeScript",
     "Vue",
-    "JavaScript",
+    "Three.js",
     "Tailwind CSS",
     "HTML/CSS",
     "Bootstrap",

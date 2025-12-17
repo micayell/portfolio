@@ -1,6 +1,7 @@
 import { projects } from "@/data/projects";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import TroubleShooting from "@/components/ui/TroubleShooting"; // 👈 아코디언 컴포넌트 import
 
 export function generateStaticParams() {
   return projects.map((p) => ({
@@ -88,34 +89,34 @@ export default async function ProjectDetail({
       {/* 2. 사용 기술 (Skills) */}
       <section className="mb-20">
         <h2 className="text-2xl font-bold mb-6 border-l-4 border-green-500 pl-4">사용 기술 및 선정 이유</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* 2열로 변경 추천 (내용 길어질 수 있어서) */}
-  {project.skills.map((skill) => (
-    <div 
-      key={skill.name} 
-      className="group bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5 transition-all duration-300 hover:shadow-md"
-    >
-      {/* 1. 헤더 (항상 보임) */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-          {skill.name}
-        </h3>
-        {/* 화살표 아이콘 (펼쳐질 때 돌아가게) */}
-        <span className="text-gray-400 transition-transform duration-300 group-hover:rotate-180">
-          ▼
-        </span>
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {project.skills.map((skill) => (
+            <div 
+              key={skill.name} 
+              className="group bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5 transition-all duration-300 hover:shadow-md"
+            >
+              {/* 1. 헤더 (항상 보임) */}
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                  {skill.name}
+                </h3>
+                {/* 화살표 아이콘 (펼쳐질 때 돌아가게) */}
+                <span className="text-gray-400 transition-transform duration-300 group-hover:rotate-180">
+                  ▼
+                </span>
+              </div>
 
-      {/* 2. 내용 (평소엔 높이 0 -> 호버 시 늘어남) */}
-      <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-hover:grid-rows-[1fr]">
-        <div className="overflow-hidden">
-          <p className="pt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-            {skill.reason}
-          </p>
+              {/* 2. 내용 (평소엔 높이 0 -> 호버 시 늘어남) */}
+              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-hover:grid-rows-[1fr]">
+                <div className="overflow-hidden">
+                  <p className="pt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {skill.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
-  ))}
-</div>
       </section>
 
       {/* 3. 핵심 기능 (Features) */}
@@ -135,35 +136,14 @@ export default async function ProjectDetail({
                   {feature.description}
                 </p>
               </div>
-              {/* 이미지가 있다면 여기에 렌더링 (지금은 없어서 생략) */}
-              {/* <div className="flex-1 h-64 bg-gray-100 rounded-xl w-full"></div> */}
             </div>
           ))}
         </div>
       </section>
 
-      {/* 4. 트러블 슈팅 (Trouble Shooting) */}
+      {/* 4. 트러블 슈팅 (Trouble Shooting) - 클라이언트 컴포넌트로 교체 */}
       {project.troubleShooting && (
-        <section className="mb-20">
-          <h2 className="text-2xl font-bold mb-6 border-l-4 border-red-500 pl-4">문제 해결 사례</h2>
-          <div className="space-y-6">
-            {project.troubleShooting.map((ts, index) => (
-              <div key={index} className="bg-white dark:bg-black border dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-bold mb-4 text-red-600">⚠️ {ts.problem}</h3>
-                <div className="space-y-4 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
-                  <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Solution</span>
-                    <p className="mt-1 text-gray-700 dark:text-gray-300">{ts.solution}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Result</span>
-                    <p className="mt-1 text-gray-700 dark:text-gray-300">{ts.result}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <TroubleShooting items={project.troubleShooting} />
       )}
     </article>
   );

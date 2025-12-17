@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import Header from "@/components/ui/Header"; // 헤더는 그대로 유지
-import AppLayout from "@/components/layout/AppLayout"; // 새로 만든 레이아웃 import
+import AppLayout from "@/components/layout/AppLayout";
+// Header import 제거
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +29,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-      >
-        <Header /> {/* 헤더는 최상단 고정 */}
-        
-        {/* AppLayout으로 children을 감쌉니다 */}
-        <AppLayout>
-          {children}
-        </AppLayout>
-        
+        >
+          {/* Header 컴포넌트 제거 (page.tsx로 이동) */}
+          
+          <AppLayout>
+            {children}
+          </AppLayout>
+          
         </ThemeProvider>
       </body>
     </html>

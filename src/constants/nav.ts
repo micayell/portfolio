@@ -1,5 +1,5 @@
 export const NAV_ITEMS = [
-    { name: "About", href: "/#about" },
-    { name: "Skills", href: "/#skills" },
-    { name: "Projects", href: "/#projects" },
-  ];
+  { name: "About", id: "about" },
+  { name: "Skills", id: "skills" },
+  { name: "Projects", id: "projects" },
+] as const;

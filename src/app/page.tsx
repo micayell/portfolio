@@ -1,6 +1,6 @@
 "use client"; // 👈 상태 관리를 위해 클라이언트 컴포넌트로 변경
 
-import { useState, useEffect } from "react"; // 👈 추가
+import { useState } from "react"; // 👈 추가
 import Header from "@/components/ui/Header";
 import ProjectCarousel from "@/components/ui/ProjectCarousel";
 import About from "@/components/ui/About";
@@ -20,6 +20,7 @@ function getStartDate(period: string): number {
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true); // 👈 인트로 표시 상태
+  const [activeTab, setActiveTab] = useState("about"); // 초기 탭
 
   // 정렬 로직 (컴포넌트 내부로 이동)
   const sortedProjects = [...projects].sort((a, b) => {
@@ -41,10 +42,7 @@ export default function Home() {
   // 인트로 종료 핸들러
   const handleIntroClick = () => {
     setShowIntro(false);
-    // 약간의 지연 후 스크롤 이동 (선택 사항)
-    setTimeout(() => {
-      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    // 탭 방식이므로 스크롤 이동 불필요
   };
 
   return (
@@ -60,24 +58,39 @@ export default function Home() {
 
       {/* 2. 본문 내용 (인트로가 사라지면 보임) */}
       <div className={`transition-opacity duration-1000 ${showIntro ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
-        <Header />
         
-        <main className="max-w-5xl mx-auto px-6 pt-32 pb-20 space-y-32"> 
-          <About />
-          <Skills />
-
-          <section id="projects" className="scroll-mt-24">
-            <div className="mb-12 text-center md:text-left">
-              <h2 className="text-4xl font-bold mb-4 inline-block border-b-4 border-blue-500 pb-2">
-                Projects
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-4">
-                사용자에게 가치를 더하는 서비스를 고민하고 구현합니다.
-              </p>
+        {/* Header에 현재 탭 상태 전달 */}
+        <Header activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        <main className="max-w-5xl mx-auto px-6 pt-32 pb-20"> 
+          
+          {/* 탭에 따라 조건부 렌더링 */}
+          {activeTab === "about" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <About />
             </div>
-            
-            <ProjectCarousel projects={sortedProjects} />
-          </section>
+          )}
+          
+          {activeTab === "skills" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Skills />
+            </div>
+          )}
+
+          {activeTab === "projects" && (
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mb-12 text-center md:text-left">
+                <h2 className="text-4xl font-bold mb-4 inline-block border-b-4 border-blue-500 pb-2">
+                  Projects
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-4">
+                  사용자에게 가치를 더하는 서비스를 고민하고 구현합니다.
+                </p>
+              </div>
+              <ProjectCarousel projects={sortedProjects} />
+            </section>
+          )}
+
         </main>
         
         <footer className="py-8 text-center text-sm text-gray-500 border-t border-gray-200 dark:border-gray-800">

@@ -6,6 +6,14 @@ import { getImagePath } from "@/lib/utils";
 export default function About() {
   return (
     <section id="about" className="py-20 border-b border-gray-200 dark:border-gray-800">
+      
+      {/* 섹션 헤더 추가 */}
+      <div className="mb-12 text-center md:text-left">
+        <h2 className="text-4xl font-bold mb-4 inline-block border-b-4 border-blue-500 pb-2">
+          About
+        </h2>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-12 items-start">
         
         {/* 1. 프로필 이미지 영역 */}
@@ -31,7 +39,11 @@ export default function About() {
             </div>
             <div className="flex justify-between border-b pb-2 dark:border-gray-800">
               <span className="font-bold">Github</span>
-              <a href={profile.github} target="_blank" className="hover:text-blue-500">@micayell</a>
+              <a href={profile.github} target="_blank" className="hover:text-blue-500">GitHub 프로필</a>
+            </div>
+            <div className="flex justify-between border-b pb-2 dark:border-gray-800">
+              <span className="font-bold">Blog</span>
+              <a href={profile.blog} target="_blank" className="hover:text-blue-500">CJ's 블로그</a>
             </div>
           </div>
         </div>
@@ -40,7 +52,7 @@ export default function About() {
         <div className="flex-1">
           <h2 className="text-4xl font-bold mb-8 leading-tight">
             안녕하십니까.<br />
-            <span className="text-blue-600">변화의 흐름을 읽고 민첩하게 나아가는</span><br />
+            <span className="text-blue-600">사용자 경험을 개선할 수 있는</span><br />
             개발자 <span className="text-black dark:text-white">{profile.name}</span>입니다.
           </h2>
           
@@ -59,10 +71,16 @@ export default function About() {
               </h3>
               <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-400">
                 {education.map((edu, index) => (
-                  <li key={index}>
-                    <span className="block font-medium text-black dark:text-white">{edu.school}</span>
-                    {edu.period}
-                  </li>
+                  <li key={index} className="space-y-1"> {/* 간격 조정을 위해 클래스 추가 */}
+                  <span className="block font-medium text-black dark:text-white">{edu.school}</span>
+                  <span className="block text-xs text-gray-500">{edu.period}</span>
+                  {/* 설명(복수전공 등) 추가 */}
+                  {edu.desc && (
+                    <span className="block text-gray-600 dark:text-gray-400">
+                      {edu.desc}
+                    </span>
+                  )}
+                </li>
                 ))}
               </ul>
             </div>
@@ -71,7 +89,7 @@ export default function About() {
              <div className="bg-gray-50 dark:bg-zinc-900 p-5 rounded-xl">
               <h3 className="font-bold mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
-                Awards & Cert
+                Awards & Certificates
               </h3>
               <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-400">
                 {awards.map((award, index) => (
