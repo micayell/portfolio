@@ -75,7 +75,7 @@ export const projects: Project[] = [
         "드라이브스루/주차장 결제 시의 불편함 해소 및 자동 결제 시스템 구현",
       role: "Frontend Developer (Mobile App, Web Kiosk) - 기여도 60%",
       period: "2025.08.25 - 2025.09.29",
-      members: "6인 (Back 3, Front 2, AI 1)",
+      members: "6인",
     },
 
     skills: [
@@ -142,7 +142,7 @@ export const projects: Project[] = [
         "답답한 뷰 대신 개방감과 감성적인 뷰로 전환하고, 사용자와 공간이 상호작용하는 미래형 스마트 홈 디바이스 제시",
       role: "FE(APP) 개발(100%), BE 기능 일부 개발(OAuth, User, Token)",
       period: "2025.10.13 - 2025.11.20",
-      members: "6인 (BE 1, APP 1, QT 2, HW 1, AI 1)",
+      members: "6인",
     },
 
     skills: [
@@ -211,7 +211,7 @@ export const projects: Project[] = [
       background: "비대면 환경에서도 실감 나는 소통과 재미를 제공하기 위함",
       role: "FrontEnd 개발, UX/UI 디자인",
       period: "2025.07.07 ~ 2025.08.18",
-      members: "팀 프로젝트",
+      members: "6인",
     },
 
     skills: [
@@ -262,7 +262,7 @@ export const projects: Project[] = [
         "복잡한 금융 상품 정보를 쉽게 비교하고 개인화된 추천을 받기 위함",
       role: "Backend 전담 (Django REST API, OpenAI 연동)",
       period: "2025.05.22 - 2025.05.28",
-      members: "2인 (풀스택 개발)",
+      members: "2인",
     },
 
     skills: [

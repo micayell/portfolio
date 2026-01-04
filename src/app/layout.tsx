@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "김창주의 포트폴리오",
+  title: "CJ's Portfolio",
   description: "내 포트폴리오 웹사이트",
 };
 
