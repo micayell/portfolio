@@ -4,6 +4,116 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Project } from "@/types/project";
 import { X, Github, ExternalLink, Award, Figma } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { fetchProjectContent } from "@/app/actions";
+
+// --- 텍스트 렌더러 ---
+const Text = ({ text }: { text: any }) => {
+  if (!text) return null;
+  const { annotations } = text;
+  
+  const styleClasses = [
+    annotations.bold ? "font-bold" : "",
+    annotations.italic ? "italic" : "",
+    annotations.strikethrough ? "line-through" : "",
+    annotations.underline ? "underline" : "",
+    annotations.code ? "bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 font-mono text-sm text-red-500" : "",
+    annotations.color !== "default" ? `text-${annotations.color}-500` : "",
+  ].join(" ");
+
+  if (text.href) {
+    return (
+      <a href={text.href} target="_blank" rel="noreferrer" className={`text-blue-500 hover:underline ${styleClasses}`}>
+        {text.plain_text}
+      </a>
+    );
+  }
+  return <span className={styleClasses}>{text.plain_text}</span>;
+};
+
+// --- 블록 렌더러 ---
+const RenderBlock = ({ block }: { block: any }) => {
+  const { type } = block;
+  const value = block[type];
+
+  switch (type) {
+    case "paragraph":
+      return (
+        <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
+          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+        </p>
+      );
+    case "heading_1":
+      return (
+        <h1 className="text-3xl font-bold mt-12 mb-6 font-serif text-black dark:text-white">
+          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+        </h1>
+      );
+    case "heading_2":
+      return (
+        <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-black dark:border-white pl-4 font-serif text-black dark:text-white">
+          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+        </h2>
+      );
+    case "heading_3":
+      return (
+        <h3 className="text-xl font-semibold mt-6 mb-2 text-black dark:text-white">
+          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+        </h3>
+      );
+    case "bulleted_list_item":
+      return (
+        <div className="flex mb-1 ml-4 items-start">
+          <span className="mr-2 text-gray-700 dark:text-gray-300">•</span>
+          <div className="text-gray-700 dark:text-gray-300 leading-7">
+             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </div>
+        </div>
+      );
+    case "numbered_list_item":
+      return (
+        <div className="flex mb-1 ml-4 items-start">
+          <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
+          <div className="text-gray-700 dark:text-gray-300 leading-7">
+             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </div>
+        </div>
+      );
+    case "image":
+      const imageUrl = value.type === "external" ? value.external.url : value.file.url;
+      const caption = value.caption?.[0]?.plain_text || "";
+      return (
+        <figure className="my-8 flex flex-col items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={imageUrl} 
+            alt={caption || "project image"} 
+            className="rounded-sm shadow-md border dark:border-gray-800 max-h-[600px] w-auto object-contain"
+          />
+          {caption && <figcaption className="text-gray-500 mt-2 text-xs text-center font-serif italic">{caption}</figcaption>}
+        </figure>
+      );
+    case "divider": 
+      return <hr className="my-12 border-t border-gray-200 dark:border-gray-800" />;
+    case "quote":
+      return (
+        <blockquote className="border-l-2 border-black dark:border-white pl-6 py-2 my-8 italic text-lg text-gray-700 dark:text-gray-300 font-serif bg-gray-50 dark:bg-zinc-900">
+          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+        </blockquote>
+      );
+    case "callout":
+      return (
+        <div className="flex p-6 my-6 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-sm">
+          <div className="mr-4 text-2xl">{value.icon?.emoji || "💡"}</div>
+          <div className="text-gray-700 dark:text-gray-300 leading-7">
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
 interface ProjectModalProps {
   project: Project | null;
@@ -11,192 +121,134 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+  const [blocks, setBlocks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (project?.pageId) {
+      setIsLoading(true);
+      fetchProjectContent(project.pageId)
+        .then((data) => setBlocks(data))
+        .catch((err) => console.error("Failed to load content", err))
+        .finally(() => setIsLoading(false));
+    } else {
+      setBlocks([]);
+    }
+  }, [project]);
+
   if (!project) return null;
 
   return (
     <AnimatePresence>
       {project && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop: 완전 불투명 배경 사용 */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-[#f5f5f5] dark:bg-[#111] z-[60]" 
           />
 
-          {/* Modal Content */}
+          {/* Modal Container */}
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.95 }}
-            className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-x-[10%] md:top-[10%] md:bottom-[10%] z-50 flex flex-col pointer-events-none"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 pointer-events-none"
           >
-            <div className="bg-white dark:bg-zinc-900 w-full h-full max-w-5xl mx-auto shadow-2xl overflow-hidden rounded-sm flex flex-col pointer-events-auto border border-gray-100 dark:border-zinc-800">
+            {/* Modal Content */}
+            <div className="bg-white dark:bg-[#1a1a1a] w-full max-w-5xl h-[90vh] shadow-2xl rounded-xl overflow-hidden flex flex-col pointer-events-auto border border-gray-200 dark:border-zinc-800 relative">
               
               {/* Header */}
-              <div className="flex justify-between items-start p-6 md:p-8 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-10">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="museum-label text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-900/30 px-2 py-0.5 rounded-full text-[10px]">
-                      PROJECT
+              <div className="flex justify-between items-start p-6 md:p-8 border-b border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md sticky top-0 z-20">
+                <div className="max-w-2xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/10">
+                      Project
                     </span>
                     {project.award && (
-                      <span className="flex items-center gap-1 text-amber-500 text-xs font-medium bg-amber-50 dark:bg-amber-900/10 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
-                        <Award className="w-3 h-3" />
-                        {project.award}
+                      <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-[10px] font-bold tracking-widest uppercase bg-amber-50 dark:bg-amber-900/10 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                        <Award className="w-3 h-3" /> {project.award}
                       </span>
                     )}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-light text-gray-900 dark:text-gray-100">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 font-serif mb-2">
                     {project.title}
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400 mt-1 font-light">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed">
                     {project.description}
                   </p>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                >
+                <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800">
                   <X className="w-6 h-6 text-gray-500" />
                 </button>
               </div>
 
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-12">
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1a1a]">
                 
-                {/* 1. Overview Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                  <div className="col-span-1 space-y-6">
-                    {project.thumbnailUrl && (
-                      <div className="aspect-video relative bg-gray-100 dark:bg-zinc-800 overflow-hidden rounded-sm">
-                        <Image 
-                          src={project.thumbnailUrl} 
-                          alt={project.title} 
-                          fill 
-                          className="object-cover" 
-                        />
+                {/* Meta Info Bar */}
+                <div className="flex flex-wrap gap-6 p-6 md:px-8 bg-gray-50 dark:bg-zinc-900/50 border-b border-gray-100 dark:border-zinc-800 text-sm">
+                   <div>
+                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Period</span>
+                      <span className="text-gray-700 dark:text-gray-300">{project.overview.period}</span>
+                   </div>
+                   <div>
+                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Role</span>
+                      <span className="text-gray-700 dark:text-gray-300">{project.overview.role}</span>
+                   </div>
+                   <div className="flex-1 min-w-[200px]">
+                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tech Stack</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {project.tags.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded text-xs text-gray-600 dark:text-gray-300">
+                            {tag}
+                          </span>
+                        ))}
                       </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-3">
+                   </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 md:p-12 max-w-4xl mx-auto">
+                   {/* Links */}
+                   <div className="flex flex-wrap gap-3 mb-12">
                       {project.githubUrl && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-90 transition-opacity rounded-sm"
-                        >
-                          <Github className="w-4 h-4" />
-                          GitHub
-                        </a>
-                      )}
-                      {project.figmaUrl && (
-                        <a
-                          href={project.figmaUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium rounded-sm"
-                        >
-                          <Figma className="w-4 h-4" />
-                          Figma
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
+                          <Github className="w-4 h-4" /> Source Code
                         </a>
                       )}
                       {project.demoUrl && (
-                        <a
-                          href={project.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium rounded-sm"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          Demo
+                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                          <ExternalLink className="w-4 h-4" /> Live Demo
                         </a>
                       )}
-                    </div>
+                      {project.figmaUrl && (
+                        <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                          <Figma className="w-4 h-4" /> Design
+                        </a>
+                      )}
+                   </div>
 
-                    <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
-                      <div>
-                        <div className="museum-label">Period</div>
-                        <div className="text-sm">{project.overview.period}</div>
-                      </div>
-                      <div>
-                        <div className="museum-label">Role</div>
-                        <div className="text-sm">{project.overview.role}</div>
-                      </div>
-                      <div>
-                        <div className="museum-label">Members</div>
-                        <div className="text-sm">{project.overview.members}</div>
-                      </div>
-                      <div>
-                        <div className="museum-label">Tech Stack</div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {project.tags.map((tag) => (
-                            <span 
-                              key={tag} 
-                              className="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-xs text-gray-600 dark:text-gray-300 rounded-sm"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                   {/* Notion Content */}
+                   <div className="prose dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-bold prose-p:leading-relaxed prose-img:rounded-lg">
+                      {isLoading ? (
+                        <div className="space-y-4 py-10 animate-pulse max-w-2xl mx-auto">
+                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4" />
+                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-full" />
+                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-5/6" />
+                          <div className="h-64 bg-gray-100 dark:bg-zinc-900 rounded-lg mt-8" />
                         </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-span-1 md:col-span-2 space-y-10">
-                    <section>
-                      <h3 className="museum-heading text-xl mb-3">Project Overview</h3>
-                      <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
-                        <p><strong className="text-black dark:text-white font-medium">Goal:</strong> {project.overview.goal}</p>
-                        <p><strong className="text-black dark:text-white font-medium">Background:</strong> {project.overview.background}</p>
-                      </div>
-                    </section>
-
-                    <section>
-                      <h3 className="museum-heading text-xl mb-3">Key Features</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {project.features.map((feature, i) => (
-                          <div key={i} className="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-sm border border-gray-100 dark:border-zinc-800">
-                            <h4 className="font-medium mb-2">{feature.title}</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-
-                    <section>
-                      <h3 className="museum-heading text-xl mb-3">Technical Decisions</h3>
-                      <ul className="space-y-3">
-                        {project.skills.map((skill, i) => (
-                          <li key={i} className="flex gap-3">
-                            <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500 mt-2" />
-                            <div>
-                              <span className="font-medium block text-gray-900 dark:text-gray-100">{skill.name}</span>
-                              <span className="text-sm text-gray-600 dark:text-gray-400">{skill.reason}</span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-
-                    {project.troubleShooting && (
-                      <section>
-                        <h3 className="museum-heading text-xl mb-3">Troubleshooting</h3>
-                        <div className="space-y-4">
-                          {project.troubleShooting.map((item, i) => (
-                            <div key={i} className="border-l-2 border-gray-200 dark:border-zinc-700 pl-4 py-1">
-                              <h4 className="font-medium text-red-500/80 mb-1">Problem: {item.problem}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2"><strong>Solution:</strong> {item.solution}</p>
-                              <p className="text-sm text-blue-600/80 dark:text-blue-400/80"><strong>Result:</strong> {item.result}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-                    )}
-                  </div>
+                      ) : blocks.length > 0 ? (
+                        blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
+                      ) : (
+                        <p className="text-center text-gray-500 italic py-20 border border-dashed border-gray-200 rounded-lg">
+                          상세 내용이 없습니다.
+                        </p>
+                      )}
+                   </div>
                 </div>
 
               </div>
@@ -207,4 +259,3 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
     </AnimatePresence>
   );
 }
-

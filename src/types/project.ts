@@ -1,5 +1,6 @@
 export interface Project {
     id: string;
+    pageId?: string;
     title: string;
     description: string;
     tags: string[];

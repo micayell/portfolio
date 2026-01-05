@@ -53,14 +53,6 @@ export default function ClientPage({ initialProjects }: ClientPageProps) {
 
           {activeTab === "projects" && (
             <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
-              <div className="max-w-5xl mx-auto px-6 mb-12 text-center md:text-left">
-                <h2 className="text-4xl font-light mb-4 inline-block border-b border-gray-300 pb-2">
-                  Exhibition
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-4 font-light tracking-wide">
-                  Explore the collection of digital works.
-                </p>
-              </div>
               
               <div className="w-full h-[600px] md:h-[800px]">
                 <GalleryScene projects={projects} onSelectProject={setSelectedProject} />

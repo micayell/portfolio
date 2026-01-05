@@ -1,17 +1,19 @@
 "use client";
 
 import { useRef, useState, useEffect, Suspense } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { 
-  Image, 
-  Text, 
-  Environment, 
-  useCursor
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import {
+  Image,
+  Text,
+  Environment,
+  useCursor,
+  useTexture
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Project } from "@/types/project";
 import { easing } from "maath";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { TextureLoader } from "three";
 
 interface GallerySceneProps {
   projects: Project[];
@@ -43,14 +45,14 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
 
   return (
     <div className="w-full h-[600px] md:h-[800px] bg-[#e0e0e0] relative group overflow-hidden">
-      
+
       {/* shadows prop만 남기고 SoftShadows 컴포넌트는 제거 */}
       <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 0, 6.5], fov: 40 }}>
         <Suspense fallback={null}>
-          <Scene 
-            projects={projects} 
-            currentIndex={index} 
-            onSelectProject={onSelectProject} 
+          <Scene
+            projects={projects}
+            currentIndex={index}
+            onSelectProject={onSelectProject}
           />
         </Suspense>
       </Canvas>
@@ -67,7 +69,7 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
 
       {/* 재생 컨트롤러 */}
       <div className="absolute bottom-6 right-6 flex items-center gap-3 z-10">
-        <button 
+        <button
           onClick={() => setAutoPlay(!autoPlay)}
           className="p-3 rounded-full bg-white/80 hover:bg-white shadow-lg text-gray-800 transition-all"
         >
@@ -80,30 +82,32 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
 }
 
 function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[], currentIndex: number, onSelectProject: (p: Project) => void }) {
-  const gap = 8; // 작품 간격
+  const gap = 10; // 간격을 12로 설정
 
   useFrame((state, delta) => {
     const targetX = currentIndex * gap;
-    // 카메라 이동
+    // 1. 카메라 위치 부드럽게 이동
     easing.damp3(state.camera.position, [targetX, 0, 6.5], 0.4, delta);
-    easing.damp3(state.camera.lookAt, [targetX, 0, 0], 0.4, delta);
+
+    // 2. 카메라가 항상 현재 작품(targetX)을 바라보도록 설정 (함수 호출)
+    state.camera.lookAt(targetX, 0, 0);
   });
 
   return (
     <>
       <color attach="background" args={['#e0e0e0']} />
-      
+
       <ambientLight intensity={0.6} />
-      
-      {/* SpotLight 설정 최적화: mapSize를 키워서 그림자 품질 향상 */}
-      <spotLight 
-        position={[currentIndex * gap, 5, 5]} 
-        angle={0.5} 
-        penumbra={0.5} 
-        intensity={1.5} 
-        castShadow 
+
+      {/* SpotLight 설정 최적화 */}
+      <spotLight
+        position={[currentIndex * gap, 5, 5]}
+        angle={0.5}
+        penumbra={0.5}
+        intensity={1.5}
+        castShadow
         shadow-bias={-0.0001}
-        shadow-mapSize={[2048, 2048]} // 고해상도 그림자
+        shadow-mapSize={[2048, 2048]}
       />
 
       {/* 1. 벽 (Wall) */}
@@ -115,7 +119,7 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
       {/* 2. 바닥 (Floor) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[currentIndex * gap, -2.5, 2]}>
         <planeGeometry args={[100, 10]} />
-        <meshStandardMaterial color="#8d6e63" roughness={0.8} /> 
+        <meshStandardMaterial color="#8d6e63" roughness={0.8} />
       </mesh>
 
       {/* 3. 걸레받이 (Molding) */}
@@ -126,7 +130,7 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
 
       <group>
         {projects.map((project, i) => (
-          <Frame 
+          <Frame
             key={project.id}
             project={project}
             position={[i * gap, 0.2, 0]}
@@ -134,86 +138,113 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
           />
         ))}
       </group>
-      
+
       <Environment preset="city" blur={1} />
     </>
   );
 }
 
 function Frame({ project, position, onSelect }: { project: Project, position: [number, number, number], onSelect: (p: Project) => void }) {
-  const ref = useRef<THREE.Group>(null);
-  const [hovered, setHover] = useState(false);
-  useCursor(hovered);
+  const image = useLoader(TextureLoader, project.thumbnailUrl || ""); 
+  const frameWidth = 4.5; 
+  const frameHeight = 3.0;
+  const frameThickness = 0.1;
+  const matWidth = 0.4;
+  
+  // 이미지 비율 계산 (기본 16:9 가정하에 조정)
+  const imageAspect = 16 / 9;
+  const displayWidth = frameWidth - (matWidth * 2);
+  const displayHeight = displayWidth / imageAspect;
 
-  useFrame((state, delta) => {
-    if(!ref.current) return;
-    const targetScale = hovered ? 1.02 : 1;
-    easing.damp3(ref.current.scale, [targetScale, targetScale, targetScale], 0.3, delta);
-  });
-
+  const fontUrl = "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff"; 
   return (
-    <group 
-      ref={ref}
-      position={position}
-      onClick={(e) => { e.stopPropagation(); onSelect(project); }}
-      onPointerOver={() => setHover(true)}
-      onPointerOut={() => setHover(false)}
-    >
-      {/* 액자 프레임 */}
-      <mesh position={[0, 0, 0]} castShadow>
-        <boxGeometry args={[3.2, 2.4, 0.1]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.5} />
+    <group position={position}>
+      {/* 1. 액자 프레임 */}
+      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[frameWidth, frameHeight, frameThickness]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.8} />
       </mesh>
 
-      {/* 매트 */}
-      <mesh position={[0, 0, 0.06]}>
-        <planeGeometry args={[3, 2.2]} />
-        <meshStandardMaterial color="#fdfdfd" roughness={0.9} />
+      {/* 2. 매트 (흰색 테두리) */}
+      <mesh position={[0, 0, frameThickness/2 + 0.01]} receiveShadow>
+        <planeGeometry args={[frameWidth - 0.1, frameHeight - 0.1]} />
+        <meshStandardMaterial color="#f5f5f5" roughness={0.8} />
       </mesh>
 
-      {/* 그림자용 뒷판 */}
-      <mesh position={[0, 0, -0.05]}>
-         <planeGeometry args={[3.3, 2.5]} />
-         <meshBasicMaterial color="#000" transparent opacity={0.2} />
+      {/* 3. 프로젝트 썸네일 */}
+      <mesh 
+        position={[0, 0, frameThickness/2 + 0.02]} 
+        onClick={() => onSelect(project)}
+        onPointerOver={() => { document.body.style.cursor = 'pointer' }}
+        onPointerOut={() => { document.body.style.cursor = 'auto' }}
+      >
+        <planeGeometry args={[displayWidth, displayHeight]} />
+        <meshBasicMaterial map={image} toneMapped={false} />
       </mesh>
 
-      {/* 작품 이미지 */}
-      <Image 
-        url={project.thumbnailUrl || '/file.svg'}
-        scale={[2.6, 1.8, 1]}
-        position={[0, 0, 0.07]}
-      />
-
-      {/* 캡션 */}
-      <group position={[2.2, -0.5, 0]}>
+      {/* 4. 캡션 (가독성 개선 적용됨) */}
+      <group position={[3.3, -0.2, 0]}> 
+        {/* 배경: 밝은 흰색 & 자체 발광 */}
         <mesh castShadow receiveShadow>
-          <boxGeometry args={[0.8, 0.5, 0.02]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.8} />
+          <boxGeometry args={[1.6, 1.2, 0.02]} /> 
+          <meshStandardMaterial 
+            color="#ffffff" 
+            roughness={0.1} 
+            metalness={0.0} 
+            emissive="#ffffff" 
+            emissiveIntensity={0.2} 
+          />
         </mesh>
         
+        {/* 텍스트: 진한 검정색 & 크기/행간 조정 */}
         <Text
-          position={[0, 0.1, 0.02]}
-          fontSize={0.06}
-          color="#333"
-          anchorX="center"
+          position={[-0.7, 0.35, 0.03]}
+          fontSize={0.15}
+          color="#000000"
+          anchorX="left"
           anchorY="middle"
-          maxWidth={0.7}
-          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+          maxWidth={1.4}
+          font={fontUrl}
+          fontWeight={700}
         >
           {project.title}
         </Text>
+        
         <Text
-          position={[0, -0.05, 0.02]}
-          fontSize={0.035}
-          color="#666"
-          anchorX="center"
+          position={[-0.7, 0.12, 0.03]} 
+          fontSize={0.06}
+          color="#333333"
+          anchorX="left"
           anchorY="middle"
-          maxWidth={0.7}
-          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+          maxWidth={1.4}
+          font={fontUrl}
         >
           {project.overview.period}
-          {'\n'}
-          {project.tags.slice(0, 3).join(" / ")}
+        </Text>
+
+        <Text
+          position={[-0.7, -0.15, 0.03]} 
+          fontSize={0.055}
+          color="#222222"
+          anchorX="left"
+          anchorY="top"
+          maxWidth={1.4}
+          lineHeight={1.6}
+          font={fontUrl}
+        >
+          {project.description}
+        </Text>
+
+        <Text
+          position={[-0.7, -0.45, 0.03]} 
+          fontSize={0.045}
+          color="#555555"
+          anchorX="left"
+          anchorY="middle"
+          maxWidth={1.4}
+          font={fontUrl}
+        >
+          {project.tags.slice(0, 3).join("  •  ")}
         </Text>
       </group>
     </group>
