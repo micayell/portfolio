@@ -3,15 +3,6 @@ import { skills } from "@/data/skills";
 export default function Skills() {
   return (
     <section id="skills" className="py-20 max-w-5xl mx-auto border-t border-gray-100 dark:border-zinc-900">
-      <div className="mb-12">
-        <h2 className="text-4xl font-light mb-4 inline-block border-b border-gray-300 pb-2">
-          Skills
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2 font-light tracking-wide">
-          Technical tools and methodologies.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
         {Object.entries(skills).map(([category, items]) => {
           return (

@@ -5,14 +5,6 @@ import { getImagePath } from "@/lib/utils";
 export default function About() {
   return (
     <section id="about" className="py-20 max-w-5xl mx-auto">
-
-      {/* 섹션 헤더 */}
-      <div className="mb-12">
-        <h2 className="text-4xl font-light mb-4 inline-block border-b border-gray-300 pb-2">
-          About
-        </h2>
-      </div>
-
       <div className="flex flex-col md:flex-row gap-16 items-start">
 
         {/* 1. 프로필 이미지 영역 - 액자 스타일 */}

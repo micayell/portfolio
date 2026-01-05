@@ -4,14 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Project } from "@/types/project";
 import { X, Github, ExternalLink, Award, Figma } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { fetchProjectContent } from "@/app/actions";
 
 // --- 텍스트 렌더러 ---
 const Text = ({ text }: { text: any }) => {
   if (!text) return null;
   const { annotations } = text;
-  
+
   const styleClasses = [
     annotations.bold ? "font-bold" : "",
     annotations.italic ? "italic" : "",
@@ -66,7 +64,7 @@ const RenderBlock = ({ block }: { block: any }) => {
         <div className="flex mb-1 ml-4 items-start">
           <span className="mr-2 text-gray-700 dark:text-gray-300">•</span>
           <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
           </div>
         </div>
       );
@@ -75,7 +73,7 @@ const RenderBlock = ({ block }: { block: any }) => {
         <div className="flex mb-1 ml-4 items-start">
           <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
           <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
           </div>
         </div>
       );
@@ -85,15 +83,15 @@ const RenderBlock = ({ block }: { block: any }) => {
       return (
         <figure className="my-8 flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={imageUrl} 
-            alt={caption || "project image"} 
+          <img
+            src={imageUrl}
+            alt={caption || "project image"}
             className="rounded-sm shadow-md border dark:border-gray-800 max-h-[600px] w-auto object-contain"
           />
           {caption && <figcaption className="text-gray-500 mt-2 text-xs text-center font-serif italic">{caption}</figcaption>}
         </figure>
       );
-    case "divider": 
+    case "divider":
       return <hr className="my-12 border-t border-gray-200 dark:border-gray-800" />;
     case "quote":
       return (
@@ -121,20 +119,7 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
-  const [blocks, setBlocks] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (project?.pageId) {
-      setIsLoading(true);
-      fetchProjectContent(project.pageId)
-        .then((data) => setBlocks(data))
-        .catch((err) => console.error("Failed to load content", err))
-        .finally(() => setIsLoading(false));
-    } else {
-      setBlocks([]);
-    }
-  }, [project]);
+  const blocks = project?.blocks || [];
 
   if (!project) return null;
 
@@ -148,7 +133,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-[#f5f5f5] dark:bg-[#111] z-[60]" 
+            className="fixed inset-0 bg-[#f5f5f5] dark:bg-[#111] z-[60]"
           />
 
           {/* Modal Container */}
@@ -160,7 +145,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
           >
             {/* Modal Content */}
             <div className="bg-white dark:bg-[#1a1a1a] w-full max-w-5xl h-[90vh] shadow-2xl rounded-xl overflow-hidden flex flex-col pointer-events-auto border border-gray-200 dark:border-zinc-800 relative">
-              
+
               {/* Header */}
               <div className="flex justify-between items-start p-6 md:p-8 border-b border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md sticky top-0 z-20">
                 <div className="max-w-2xl">
@@ -188,67 +173,60 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
 
               {/* Scrollable Body */}
               <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1a1a]">
-                
+
                 {/* Meta Info Bar */}
                 <div className="flex flex-wrap gap-6 p-6 md:px-8 bg-gray-50 dark:bg-zinc-900/50 border-b border-gray-100 dark:border-zinc-800 text-sm">
-                   <div>
-                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Period</span>
-                      <span className="text-gray-700 dark:text-gray-300">{project.overview.period}</span>
-                   </div>
-                   <div>
-                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Role</span>
-                      <span className="text-gray-700 dark:text-gray-300">{project.overview.role}</span>
-                   </div>
-                   <div className="flex-1 min-w-[200px]">
-                      <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tech Stack</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.tags.map(tag => (
-                          <span key={tag} className="px-2 py-0.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded text-xs text-gray-600 dark:text-gray-300">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                   </div>
+                  <div>
+                    <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Period</span>
+                    <span className="text-gray-700 dark:text-gray-300">{project.overview.period}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Role</span>
+                    <span className="text-gray-700 dark:text-gray-300">{project.overview.role}</span>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <span className="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tech Stack</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags.map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded text-xs text-gray-600 dark:text-gray-300">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 md:p-12 max-w-4xl mx-auto">
-                   {/* Links */}
-                   <div className="flex flex-wrap gap-3 mb-12">
-                      {project.githubUrl && (
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Github className="w-4 h-4" /> Source Code
-                        </a>
-                      )}
-                      {project.demoUrl && (
-                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
-                          <ExternalLink className="w-4 h-4" /> Live Demo
-                        </a>
-                      )}
-                      {project.figmaUrl && (
-                        <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
-                          <Figma className="w-4 h-4" /> Design
-                        </a>
-                      )}
-                   </div>
+                  {/* Links */}
+                  <div className="flex flex-wrap gap-3 mb-12">
+                    {project.githubUrl && (
+                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
+                        <Github className="w-4 h-4" /> Source Code
+                      </a>
+                    )}
+                    {project.demoUrl && (
+                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                        <ExternalLink className="w-4 h-4" /> Live Demo
+                      </a>
+                    )}
+                    {project.figmaUrl && (
+                      <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                        <Figma className="w-4 h-4" /> Design
+                      </a>
+                    )}
+                  </div>
 
-                   {/* Notion Content */}
-                   <div className="prose dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-bold prose-p:leading-relaxed prose-img:rounded-lg">
-                      {isLoading ? (
-                        <div className="space-y-4 py-10 animate-pulse max-w-2xl mx-auto">
-                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4" />
-                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-full" />
-                          <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-5/6" />
-                          <div className="h-64 bg-gray-100 dark:bg-zinc-900 rounded-lg mt-8" />
-                        </div>
-                      ) : blocks.length > 0 ? (
-                        blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
-                      ) : (
-                        <p className="text-center text-gray-500 italic py-20 border border-dashed border-gray-200 rounded-lg">
-                          상세 내용이 없습니다.
-                        </p>
-                      )}
-                   </div>
+                  {/* 본문 내용 렌더링 부분 */}
+                  <div className="prose dark:prose-invert max-w-none mb-10">
+                    {blocks.length > 0 ? (
+                      blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
+                    ) : (
+                      <p className="text-gray-500 italic text-center py-10">
+                        작성된 본문 내용이 없습니다.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
               </div>

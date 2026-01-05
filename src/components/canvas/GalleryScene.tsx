@@ -117,9 +117,13 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
       </mesh>
 
       {/* 2. 바닥 (Floor) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[currentIndex * gap, -2.5, 2]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[currentIndex * gap, -2.5, 2]} receiveShadow>
         <planeGeometry args={[100, 10]} />
-        <meshStandardMaterial color="#8d6e63" roughness={0.8} />
+        <meshStandardMaterial 
+          color="#8d6e63" 
+          roughness={0.4} // 기존 0.2에서 0.4로 올려서 너무 쨍한 반사를 줄임
+          metalness={0.1} 
+        />
       </mesh>
 
       {/* 3. 걸레받이 (Molding) */}
@@ -183,17 +187,25 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
       </mesh>
 
       {/* 4. 캡션 (가독성 개선 적용됨) */}
-      <group position={[3.3, -0.2, 0]}> 
-        {/* 배경: 밝은 흰색 & 자체 발광 */}
+      <group position={[3.2, -0.5, 0]}> 
+        {/* 그림자 메쉬 */}
+        <mesh position={[0.05, -0.05, -0.02]} receiveShadow>
+          <boxGeometry args={[1.6, 1.2, 0.01]} />
+          <meshBasicMaterial color="#000" opacity={0.1} transparent />
+        </mesh>
+
+        {/* 캡션 본체 - 약간의 투명도 추가 */}
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.6, 1.2, 0.02]} /> 
           <meshStandardMaterial 
             color="#ffffff" 
-            roughness={0.1} 
-            metalness={0.0} 
-            emissive="#ffffff" 
-            emissiveIntensity={0.2} 
-          />
+            roughness={0.9} 
+            metalness={0.0}
+            transparent={true} // 투명도 활성화
+            opacity={0.95}    // 95% 불투명 (아주 살짝 벽이 비침)
+            emissive="#ffffff"
+            emissiveIntensity={0.1} 
+          /> 
         </mesh>
         
         {/* 텍스트: 진한 검정색 & 크기/행간 조정 */}
