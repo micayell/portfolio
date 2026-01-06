@@ -1,8 +1,16 @@
 import Image from "next/image";
-import { profile, education, awards } from "@/data/about"; // 데이터 import
+import { profile, education as staticEducation, awards as staticAwards } from "@/data/about"; // 데이터 import
 import { getImagePath } from "@/lib/utils";
 
-export default function About() {
+interface AboutProps {
+  educations?: { school: string; period: string; desc: string }[];
+  awards?: { title: string; date: string; org: string }[];
+}
+
+export default function About({ educations, awards }: AboutProps) {
+  const displayEducation = educations && educations.length > 0 ? educations : staticEducation;
+  const displayAwards = awards && awards.length > 0 ? awards : staticAwards;
+
   return (
     <section id="about" className="py-20 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-16 items-start">
@@ -59,7 +67,7 @@ export default function About() {
                 Education
               </h3>
               <ul className="space-y-6">
-                {education.map((edu, index) => (
+                {displayEducation.map((edu, index) => (
                   <li key={index} className="grid grid-cols-[1fr_auto] gap-4">
                     <div>
                       <span className="block font-medium text-lg text-black dark:text-white">{edu.school}</span>
@@ -77,7 +85,7 @@ export default function About() {
                 Awards & Certificates
               </h3>
               <ul className="space-y-4">
-                {awards.map((award, index) => (
+                {displayAwards.map((award, index) => (
                   <li key={index} className="grid grid-cols-[1fr_auto] gap-4">
                     <span className="text-black dark:text-white font-light">{award.title}</span>
                     {award.date && <span className="text-sm text-gray-400 tabular-nums">{award.date}</span>}

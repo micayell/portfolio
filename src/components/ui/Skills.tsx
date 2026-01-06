@@ -1,10 +1,16 @@
-import { skills } from "@/data/skills";
+import { skills as staticSkills } from "@/data/skills";
 
-export default function Skills() {
+interface SkillsProps {
+  skills?: Record<string, string[]>;
+}
+
+export default function Skills({ skills }: SkillsProps) {
+  const displaySkills = skills && Object.keys(skills).length > 0 ? skills : staticSkills;
+
   return (
     <section id="skills" className="py-20 max-w-5xl mx-auto border-t border-gray-100 dark:border-zinc-900">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
-        {Object.entries(skills).map(([category, items]) => {
+        {Object.entries(displaySkills).map(([category, items]) => {
           return (
             <div key={category} className="group">
               <h3 className="museum-label text-black dark:text-white mb-6 border-b border-black/10 dark:border-white/10 pb-2">

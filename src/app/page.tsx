@@ -1,9 +1,16 @@
-import { getProjects, getPageContent } from "@/lib/notion"; // getPageContent 추가
+import { getProjects, getPageContent, getResumeData } from "@/lib/notion"; // getPageContent 추가
 import ClientPage from "./ClientPage";
 import { projects as fallbackProjects } from "@/data/projects";
 
 // 빌드 타임에 실행됨 (SSG)
+export const revalidate = 60; 
+
 export default async function Home() {
+  const [fetchedProjects, resumeData] = await Promise.all([
+    getProjects(),
+    getResumeData(),
+  ]);
+  
   let projects = [];
   
   try {
@@ -30,5 +37,5 @@ export default async function Home() {
     projects = fallbackProjects;
   }
 
-  return <ClientPage initialProjects={projects} />;
+  return <ClientPage initialProjects={projects} resumeData={resumeData} />;
 }

@@ -8,12 +8,14 @@ import Intro from "@/components/ui/Intro";
 import GalleryScene from "@/components/canvas/GalleryScene";
 import ProjectModal from "@/components/ui/ProjectModal";
 import { Project } from "@/types/project";
+import { ParsedResume } from "@/lib/notion";
 
 interface ClientPageProps {
   initialProjects: Project[];
+  resumeData: ParsedResume;
 }
 
-export default function ClientPage({ initialProjects }: ClientPageProps) {
+export default function ClientPage({ initialProjects, resumeData }: ClientPageProps) {
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -41,13 +43,18 @@ export default function ClientPage({ initialProjects }: ClientPageProps) {
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <About />
+              {/* 노션에서 가져온 데이터 전달 */}
+              <About 
+                educations={resumeData.educations} 
+                awards={resumeData.awards} 
+              />
             </div>
           )}
 
           {activeTab === "skills" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <Skills />
+              {/* 노션에서 가져온 데이터 전달 */}
+              <Skills skills={resumeData.skills} />
             </div>
           )}
 
