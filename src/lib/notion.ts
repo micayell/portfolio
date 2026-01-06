@@ -130,7 +130,8 @@ export async function getProjects(): Promise<Project[]> {
       projects.map(async (project: Project) => {
         // Notion URL인 경우에만 다운로드 시도
         if (project.thumbnailUrl && project.thumbnailUrl.startsWith("http")) {
-          const localUrl = await saveImage(project.thumbnailUrl, project.id);
+          // [수정] 썸네일 저장: projectId, "thumbnail"
+          const localUrl = await saveImage(project.thumbnailUrl, project.id, "thumbnail");
           return { ...project, thumbnailUrl: localUrl };
         }
         return project;
@@ -167,12 +168,40 @@ export async function getProject(slug: string): Promise<Project | null> {
 }
 
 // 2. 페이지의 본문(블록) 내용을 가져오는 함수
-export async function getPageContent(blockId: string) {
+export async function getPageContent(blockId: string, projectId: string = "") {
   try {
     const response = await notion.blocks.children.list({
       block_id: blockId,
     });
-    return response.results;
+    
+    const blocks = response.results;
+
+    // [추가] 본문 내 이미지 블록 처리
+    // projectId가 있는 경우에만 이미지를 다운로드 (이력서 등은 제외할 수도 있음)
+    if (projectId) {
+      await Promise.all(
+        blocks.map(async (block: any) => {
+          if (block.type === 'image') {
+            const imageInfo = block.image;
+            let imageUrl = "";
+            
+            if (imageInfo.type === 'external') imageUrl = imageInfo.external.url;
+            else if (imageInfo.type === 'file') imageUrl = imageInfo.file.url;
+            
+            if (imageUrl) {
+              // 이미지 다운로드 및 로컬 URL로 교체
+              const localUrl = await saveImage(imageUrl, projectId, block.id);
+              
+              // Notion 응답 객체의 URL을 로컬 경로로 직접 수정 (주의: 원본 객체 변형)
+              if (imageInfo.type === 'external') imageInfo.external.url = localUrl;
+              else if (imageInfo.type === 'file') imageInfo.file.url = localUrl;
+            }
+          }
+        })
+      );
+    }
+
+    return blocks;
   } catch (error) {
     console.error("Error fetching page content:", error);
     return [];

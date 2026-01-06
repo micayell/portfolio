@@ -20,8 +20,8 @@ export default async function Home() {
     projects = [];
     for (const project of fetchedProjects) {
       if (project.pageId) {
-        // 본문 내용(blocks) 미리 가져오기
-        const blocks = await getPageContent(project.pageId);
+        // 본문 내용(blocks) 미리 가져오기 (+이미지 다운로드 트리거)
+        const blocks = await getPageContent(project.pageId, project.id);
         projects.push({ ...project, blocks });
       } else {
         projects.push(project);
