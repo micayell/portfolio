@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/ui/Header";
 import About from "@/components/ui/About";
+import Resume from "@/components/ui/Resume";
 import Skills from "@/components/ui/Skills";
 import Intro from "@/components/ui/Intro";
 import GalleryScene from "@/components/canvas/GalleryScene";
@@ -43,11 +44,14 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* 노션에서 가져온 데이터 전달 */}
-              <About 
-                educations={resumeData.educations} 
-                awards={resumeData.awards} 
-              />
+              {/* 순수 자기소개만 전달 */}
+              <About />
+            </div>
+          )}
+
+          {activeTab === "resume" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Resume data={resumeData} />
             </div>
           )}
 

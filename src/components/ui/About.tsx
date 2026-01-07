@@ -1,16 +1,24 @@
 import Image from "next/image";
-import { profile, education as staticEducation, awards as staticAwards } from "@/data/about"; // 데이터 import
+import { profile } from "@/data/about"; // 데이터 import
 import { getImagePath } from "@/lib/utils";
+import { Github, Linkedin, Mail, BookText } from "lucide-react";
 
-interface AboutProps {
-  educations?: { school: string; period: string; desc: string }[];
-  awards?: { title: string; date: string; org: string }[];
-}
+// 텍스트 내의 **문자열** 패턴을 찾아 굵게(Strong) 처리하는 헬퍼 함수
+const formatText = (text: string) => {
+  const parts = text.split(/(\*\*.*?\*\*)/g); // **로 감싸진 부분을 분리
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-semibold text-black dark:text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+};
 
-export default function About({ educations, awards }: AboutProps) {
-  const displayEducation = educations && educations.length > 0 ? educations : staticEducation;
-  const displayAwards = awards && awards.length > 0 ? awards : staticAwards;
-
+export default function About() {
   return (
     <section id="about" className="py-20 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-16 items-start">
@@ -28,19 +36,41 @@ export default function About({ educations, awards }: AboutProps) {
             </div>
           </div>
 
-          <div className="w-full mt-6 space-y-2 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
-            <div className="flex justify-between border-b border-gray-100 dark:border-zinc-800 pb-2">
-              <span>Email</span>
-              <a href={`mailto:${profile.email}`} className="hover:text-black dark:hover:text-white transition-colors normal-case tracking-normal">{profile.email}</a>
-            </div>
-            <div className="flex justify-between border-b border-gray-100 dark:border-zinc-800 pb-2">
-              <span>Github</span>
-              <a href={profile.github} target="_blank" className="hover:text-black dark:hover:text-white transition-colors normal-case tracking-normal">@micayell</a>
-            </div>
-            <div className="flex justify-between border-b border-gray-100 dark:border-zinc-800 pb-2">
-              <span>Blog</span>
-              <a href={profile.blog} target="_blank" className="hover:text-black dark:hover:text-white transition-colors normal-case tracking-normal">Link</a>
-            </div>
+          <div className="w-full mt-6 flex justify-center gap-6">
+            <a
+              href={`mailto:${profile.email}`}
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              title="Email"
+            >
+              <Mail size={24} strokeWidth={1.5} />
+            </a>
+            <a
+              href={profile.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              title="Github"
+            >
+              <Github size={24} strokeWidth={1.5} />
+            </a>
+            <a
+              href={profile.blog}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              title="Blog"
+            >
+              <BookText size={24} strokeWidth={1.5} />
+            </a>
+            <a
+              href={profile.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              title="LinkedIn"
+            >
+              <Linkedin size={24} strokeWidth={1.5} />
+            </a>
           </div>
         </div>
 
@@ -56,43 +86,8 @@ export default function About({ educations, awards }: AboutProps) {
 
           <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 space-y-6 font-light leading-loose text-lg">
             {profile.description.map((desc, index) => (
-              <p key={index}>{desc}</p>
+              <p key={index}>{formatText(desc)}</p>
             ))}
-          </div>
-
-          <div className="mt-16 grid grid-cols-1 gap-12">
-            {/* Education */}
-            <div>
-              <h3 className="museum-label text-base mb-4 border-b border-gray-200 dark:border-zinc-800 pb-1 inline-block">
-                Education
-              </h3>
-              <ul className="space-y-6">
-                {displayEducation.map((edu, index) => (
-                  <li key={index} className="grid grid-cols-[1fr_auto] gap-4">
-                    <div>
-                      <span className="block font-medium text-lg text-black dark:text-white">{edu.school}</span>
-                      {edu.desc && <span className="block text-gray-500 dark:text-gray-400 mt-1 font-light">{edu.desc}</span>}
-                    </div>
-                    <span className="text-sm text-gray-400 tabular-nums">{edu.period}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Awards */}
-            <div>
-              <h3 className="museum-label text-base mb-4 border-b border-gray-200 dark:border-zinc-800 pb-1 inline-block">
-                Awards & Certificates
-              </h3>
-              <ul className="space-y-4">
-                {displayAwards.map((award, index) => (
-                  <li key={index} className="grid grid-cols-[1fr_auto] gap-4">
-                    <span className="text-black dark:text-white font-light">{award.title}</span>
-                    {award.date && <span className="text-sm text-gray-400 tabular-nums">{award.date}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </div>

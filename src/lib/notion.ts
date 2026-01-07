@@ -168,7 +168,8 @@ export async function getProject(slug: string): Promise<Project | null> {
 }
 
 // 2. 페이지의 본문(블록) 내용을 가져오는 함수
-export async function getPageContent(blockId: string, projectId: string = "") {
+// - column_list와 column을 재귀적으로 순회하며 내부 블록을 평탄화하여 반환
+export async function getPageContent(blockId: string, projectId: string = ""): Promise<any[]> {
   try {
     const response = await notion.blocks.children.list({
       block_id: blockId,
@@ -176,41 +177,63 @@ export async function getPageContent(blockId: string, projectId: string = "") {
     
     const blocks = response.results;
 
-    // [추가] 본문 내 이미지 블록 처리
-    // projectId가 있는 경우에만 이미지를 다운로드 (이력서 등은 제외할 수도 있음)
-    if (projectId) {
-      await Promise.all(
-        blocks.map(async (block: any) => {
-          if (block.type === 'image') {
-            const imageInfo = block.image;
-            let imageUrl = "";
-            
-            if (imageInfo.type === 'external') imageUrl = imageInfo.external.url;
-            else if (imageInfo.type === 'file') imageUrl = imageInfo.file.url;
-            
-            if (imageUrl) {
-              // 이미지 다운로드 및 로컬 URL로 교체
-              const localUrl = await saveImage(imageUrl, projectId, block.id);
-              
-              // Notion 응답 객체의 URL을 로컬 경로로 직접 수정 (주의: 원본 객체 변형)
-              if (imageInfo.type === 'external') imageInfo.external.url = localUrl;
-              else if (imageInfo.type === 'file') imageInfo.file.url = localUrl;
-            }
+    const processedBlocks = await Promise.all(
+      blocks.map(async (block: any) => {
+        // [이미지 처리]
+        if (projectId && block.type === 'image') {
+          const imageInfo = block.image;
+          let imageUrl = "";
+          
+          if (imageInfo.type === 'external') imageUrl = imageInfo.external.url;
+          else if (imageInfo.type === 'file') imageUrl = imageInfo.file.url;
+          
+          if (imageUrl) {
+            const localUrl = await saveImage(imageUrl, projectId, block.id);
+            if (imageInfo.type === 'external') imageInfo.external.url = localUrl;
+            else if (imageInfo.type === 'file') imageInfo.file.url = localUrl;
           }
-        })
-      );
-    }
+        }
 
-    return blocks;
+        // [컬럼 레이아웃 처리] column_list -> column -> children
+        if (block.type === 'column_list') {
+            // column_list 내부의 column들을 가져오고, 그 내부의 블록들을 가져옴
+            const columns = await getPageContent(block.id, projectId);
+            return columns; // 배열의 배열 형태가 됨 (나중에 flat 처리)
+        }
+
+        if (block.type === 'column') {
+             const children = await getPageContent(block.id, projectId);
+             return children;
+        }
+
+        // [일반 하위 블록 처리] (들여쓰기 내용 가져오기)
+        if (block.has_children && block.type !== 'column_list' && block.type !== 'column') {
+          (block as any).children = await getPageContent(block.id, projectId);
+        }
+
+        return block;
+      })
+    );
+
+    // 중첩된 배열 평탄화 (column_list/column 처리 결과가 배열로 들어오므로)
+    return processedBlocks.flat(Infinity);
   } catch (error) {
     console.error("Error fetching page content:", error);
     return [];
   }
 }
 
+// 들여쓰기 지원을 위한 타입 정의
+export interface DescriptionItem {
+  text: string;
+  depth: number;
+}
+
 export interface ParsedResume {
-  educations: { school: string; period: string; desc: string }[];
+  educations: { school: string; period: string; desc: DescriptionItem[] }[];
   awards: { title: string; date: string; org: string }[];
+  certificates: { title: string; date: string; org: string }[];
+  experience: { category: string; title: string; period: string; desc: DescriptionItem[] }[];
   skills: Record<string, string[]>;
 }
 
@@ -223,19 +246,30 @@ const getPlainText = (block: any) => {
 
 export async function getResumeData(): Promise<ParsedResume> {
   const pageId = process.env.NOTION_PORTFOLIO_PAGE_ID;
-  if (!pageId) return { educations: [], awards: [], skills: {} };
+  if (!pageId)
+    return {
+      educations: [],
+      awards: [],
+      certificates: [],
+      experience: [],
+      skills: {},
+    };
 
   try {
-    // 페이지의 모든 블록 가져오기
+    // 페이지의 모든 블록 가져오기 (컬럼 레이아웃 포함 평탄화됨)
     const blocks = await getPageContent(pageId);
 
     const data: ParsedResume = {
       educations: [],
       awards: [],
+      certificates: [],
+      experience: [],
       skills: {},
     };
 
     let currentSection = "";
+    let currentCategory = "General"; // Experience 내부 카테고리
+    let currentSkillCategory = ""; // Skills 내부 카테고리
 
     for (const block of blocks) {
       if (!("type" in block)) continue;
@@ -247,22 +281,45 @@ export async function getResumeData(): Promise<ParsedResume> {
       // 노션에서 제목1, 제목2, 제목3 중 하나를 사용했다고 가정
       if (["heading_1", "heading_2", "heading_3"].includes(type)) {
         const lowerText = text.toLowerCase();
-        if (lowerText.includes("education")) currentSection = "education";
-        else if (
-          lowerText.includes("award") ||
-          lowerText.includes("certificate")
-        )
-          currentSection = "awards";
-        else if (lowerText.includes("skill")) currentSection = "skills";
-        else currentSection = "";
+        
+        // 메인 섹션 헤더 감지 시, 무조건 해당 섹션으로 전환 (Skills 모드 해제)
+        if (lowerText.includes("education")) {
+           currentSection = "education";
+           currentSkillCategory = "";
+        }
+        else if (lowerText.includes("award")) {
+           currentSection = "awards";
+           currentSkillCategory = "";
+        }
+        else if (lowerText.includes("certificate")) {
+           currentSection = "certificates";
+           currentSkillCategory = "";
+        }
+        else if (lowerText.includes("experience")) {
+          currentSection = "experience";
+          currentCategory = "General"; 
+          currentSkillCategory = "";
+        } 
+        else if (lowerText.includes("skill") || lowerText.includes("skills")) {
+           currentSection = "skills";
+           currentSkillCategory = ""; // Skills 섹션 진입 시 초기화
+        }
+        
+        // Skills 섹션 내부에서의 소제목(카테고리) 판별
+        // (단, 위의 메인 섹션 조건에 걸리지 않은 경우에만 여기로 옴)
+        else if (currentSection === "skills") {
+             currentSkillCategory = text.trim();
+             if (!data.skills[currentSkillCategory]) {
+                 data.skills[currentSkillCategory] = [];
+             }
+        }
+        
         continue;
       }
 
       // 2. Education 파싱
       if (currentSection === "education") {
         if (type === "bulleted_list_item") {
-          // 예: "2025.07.07 ~ 2025.11.28 삼성 청년 SW·AI 아카데미 2학기"
-          // 날짜 패턴: YYYY.MM.DD 또는 YYYY.MM
           const dateMatch = text.match(
             /(\d{4}\.\d{2}(\.\d{2})?(\s*~\s*(\d{4}\.\d{2}(\.\d{2})?|현재|진행중))?)/
           );
@@ -270,29 +327,85 @@ export async function getResumeData(): Promise<ParsedResume> {
           if (dateMatch) {
             const period = dateMatch[0].trim();
             const school = text.replace(period, "").trim();
+            const desc: DescriptionItem[] = [];
+            
+            const collectChildrenText = (children: any[], currentDepth: number = 0) => {
+                children.forEach((child) => {
+                    const childText = getPlainText(child);
+                    if (childText) desc.push({ text: childText, depth: currentDepth });
+                    if (child.children) collectChildrenText(child.children, currentDepth + 1);
+                });
+            };
 
-            // 설명(desc)은 하위 블록(children)에 있을 수 있음.
-            // 일단은 간단하게 처리하거나, 필요하면 has_children 체크 후 getPageContent 재호출
-            // 여기서는 1단계 하위 블록까지만 가져오는 로직이 없으므로 desc는 빈 값 혹은 별도 로직 필요
-            // 만약 설명이 같은 줄에 " - 설명" 형태로 있다면 파싱 가능
-
-            data.educations.push({ school, period, desc: "" });
-          } else {
-            // 날짜가 없는 경우 (예: 설명 줄일 수도 있음)
-            // data.educations[data.educations.length - 1].desc += text; // 이전 항목의 설명으로 추가
+            if ((block as any).children) collectChildrenText((block as any).children, 0);
+            data.educations.push({ school, period, desc });
           }
         }
       }
 
-      // 3. Awards & Certificates 파싱
+      // 3. Experience 파싱 (계층 구조 지원)
+      else if (currentSection === "experience") {
+        if (type === "bulleted_list_item") {
+          const dateMatch = text.match(
+            /(\d{4}\.\d{2}(\.\d{2})?(\s*~\s*(\d{4}\.\d{2}(\.\d{2})?|현재|진행중))?)/
+          );
+
+          const collectDesc = (children: any[], currentDepth: number = 0): DescriptionItem[] => {
+             const result: DescriptionItem[] = [];
+             children.forEach(child => {
+                 const t = getPlainText(child);
+                 if(t) result.push({ text: t, depth: currentDepth });
+                 if(child.children) result.push(...collectDesc(child.children, currentDepth + 1));
+             });
+             return result;
+          };
+
+          if (dateMatch) {
+            const period = dateMatch[0].trim();
+            const title = text.replace(period, "").trim();
+            let desc: DescriptionItem[] = [];
+            if ((block as any).children) desc = collectDesc((block as any).children, 0);
+            data.experience.push({ category: "General", title, period, desc });
+          } 
+          else {
+            const children = (block as any).children || [];
+            let isCategory = false;
+            for (const child of children) {
+              const childText = getPlainText(child);
+              if (childText.match(/(\d{4}\.\d{2})/)) {
+                isCategory = true;
+                break;
+              }
+            }
+            
+            if (isCategory) {
+               currentCategory = text.trim();
+               for (const child of children) {
+                 const childText = getPlainText(child);
+                 const childDateMatch = childText.match(/(\d{4}\.\d{2}(\.\d{2})?(\s*~\s*(\d{4}\.\d{2}(\.\d{2})?|현재|진행중))?)/);
+                 if (childDateMatch) {
+                   const p = childDateMatch[0].trim();
+                   const t = childText.replace(p, "").trim();
+                   let d: DescriptionItem[] = [];
+                   if (child.children) d = collectDesc(child.children, 0);
+                   data.experience.push({ category: currentCategory, title: t, period: p, desc: d });
+                 }
+               }
+            } else {
+               if (data.experience.length > 0) {
+                 data.experience[data.experience.length - 1].desc.push({ text, depth: 0 });
+               }
+            }
+          }
+        }
+      }
+
+      // 4. Awards 파싱
       else if (currentSection === "awards") {
         if (type === "bulleted_list_item") {
-          // 예: "2025.11.20 자율 프로젝트 우수상 (삼성전자 주식회사)"
           const dateMatch = text.match(/^\d{4}\.\d{2}(\.\d{2})?/);
           const date = dateMatch ? dateMatch[0] : "";
           let content = text.replace(date, "").trim();
-
-          // 괄호 안의 기관명 추출
           const orgMatch = content.match(/\(([^)]+)\)$/); // 마지막 괄호 안 내용
           let org = "";
           let title = content;
@@ -301,30 +414,49 @@ export async function getResumeData(): Promise<ParsedResume> {
             org = orgMatch[1];
             title = content.replace(/\(.*\)$/, "").trim();
           }
-
           data.awards.push({ title, date, org });
         }
       }
 
-      // 4. Skills 파싱
-      else if (currentSection === "skills") {
-        // [Front-End] Vue, React... 형태의 Callout이나 텍스트
-        let content = text;
+      // 5. Certificates 파싱
+      else if (currentSection === "certificates") {
+        if (type === "bulleted_list_item") {
+          const dateMatch = text.match(/^\d{4}\.\d{2}(\.\d{2})?/);
+          const date = dateMatch ? dateMatch[0] : "";
+          let content = text.replace(date, "").trim();
+          const orgMatch = content.match(/\(([^)]+)\)$/);
+          let org = "";
+          let title = content;
 
-        // Callout 블록인 경우
-        if (type === "callout") {
-          content = (block as any).callout?.rich_text?.[0]?.plain_text || "";
+          if (orgMatch) {
+            org = orgMatch[1];
+            title = content.replace(/\(.*\)$/, "").trim();
+          }
+          data.certificates.push({ title, date, org });
         }
+      }
 
-        // "[Category] Items" 패턴 매칭
-        const match = content.match(/^\[(.*?)\]\s*(.*)/);
-        if (match) {
-          const category = match[1].trim();
-          const items = match[2]
-            .split(",")
-            .map((s: string) => s.trim())
-            .filter(Boolean);
-          data.skills[category] = items;
+      // 6. Skills 파싱 (구조 개선: 제목 -> 단락/리스트)
+      else if (currentSection === "skills") {
+        // (1) Callout 방식 (기존 호환성)
+        if (type === "callout") {
+            const content = (block as any).callout?.rich_text?.map((t: any) => t.plain_text).join("") || "";
+            const match = content.match(/^\[(.*?)\]\s*([\s\S]*)/); 
+            if (match) {
+                const category = match[1].trim();
+                const items = match[2].split(/,|\n/).map((s: string) => s.trim()).filter(Boolean);
+                if (items.length > 0) data.skills[category] = items;
+            }
+        }
+        // (2) 일반 텍스트 (Paragraph) -> 스킬 목록으로 추가
+        else if (type === "paragraph") {
+            if (currentSkillCategory && text.trim()) {
+                const items = text.split(/\n|,/).map((s: string) => s.trim()).filter(Boolean);
+                if (items.length > 0) {
+                    if (!data.skills[currentSkillCategory]) data.skills[currentSkillCategory] = [];
+                    data.skills[currentSkillCategory].push(...items);
+                }
+            }
         }
       }
     }
@@ -332,6 +464,12 @@ export async function getResumeData(): Promise<ParsedResume> {
     return data;
   } catch (error) {
     console.error("Error parsing resume data:", error);
-    return { educations: [], awards: [], skills: {} };
+    return {
+      educations: [],
+      awards: [],
+      certificates: [],
+      experience: [],
+      skills: {},
+    };
   }
 }
