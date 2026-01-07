@@ -2,11 +2,6 @@ import { getProjects, getPageContent, getResumeData } from "@/lib/notion";
 import ClientPage from "./ClientPage";
 
 // 빌드 타임에 실행됨 (SSG)
-// GitHub Pages 배포 시 revalidate는 동작하지 않을 수 있으므로 제거하거나, 
-// static export 설정을 확실히 하는 것이 좋습니다. 
-// 일단 제거하여 완전 정적 빌드로 동작하게 합니다.
-// export const revalidate = 60; 
-
 export default async function Home() {
   const resumeData = await getResumeData();
   const fetchedProjects = await getProjects();
@@ -30,8 +25,6 @@ export default async function Home() {
     // 에러 발생 시 빈 배열 반환 (또는 적절한 에러 UI 처리를 위해 빈 배열 유지)
   }
 
-  // 직렬화 이슈 방지를 위해 JSON 문자열로 변환하여 전달
-  const resumeDataString = JSON.stringify(resumeData);
-  
-  return <ClientPage initialProjects={projects} resumeDataString={resumeDataString} />;
+  // 직렬화 이슈 해결을 위해 일반 객체로 전달 (Next.js가 자동 처리)
+  return <ClientPage initialProjects={projects} resumeData={resumeData} />;
 }

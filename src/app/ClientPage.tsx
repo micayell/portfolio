@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Header from "@/components/ui/Header";
 import About from "@/components/ui/About";
 import Resume from "@/components/ui/Resume";
@@ -13,23 +13,13 @@ import { ParsedResume } from "@/lib/notion";
 
 interface ClientPageProps {
   initialProjects: Project[];
-  resumeDataString: string; // 문자열로 받음
+  resumeData: ParsedResume;
 }
 
-export default function ClientPage({ initialProjects, resumeDataString }: ClientPageProps) {
+export default function ClientPage({ initialProjects, resumeData }: ClientPageProps) {
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-  // 문자열 데이터를 객체로 파싱
-  const resumeData: ParsedResume = useMemo(() => {
-    try {
-      return JSON.parse(resumeDataString);
-    } catch (e) {
-      console.error("Failed to parse resume data", e);
-      return { educations: [], awards: [], certificates: [], experience: [], skills: {} };
-    }
-  }, [resumeDataString]);
 
   const projects = initialProjects;
 
