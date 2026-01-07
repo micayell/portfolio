@@ -36,5 +36,9 @@ export default async function Home() {
   }
 
   console.log("[Page.tsx] Passing data to ClientPage...");
-  return <ClientPage initialProjects={projects} resumeData={resumeData} />;
+  
+  // 직렬화 이슈 방지를 위해 JSON 문자열로 변환하여 전달
+  const resumeDataString = JSON.stringify(resumeData);
+  
+  return <ClientPage initialProjects={projects} resumeDataString={resumeDataString} />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "@/components/ui/Header";
 import About from "@/components/ui/About";
 import Resume from "@/components/ui/Resume";
@@ -13,13 +13,23 @@ import { ParsedResume } from "@/lib/notion";
 
 interface ClientPageProps {
   initialProjects: Project[];
-  resumeData: ParsedResume;
+  resumeDataString: string; // 문자열로 받음
 }
 
-export default function ClientPage({ initialProjects, resumeData }: ClientPageProps) {
+export default function ClientPage({ initialProjects, resumeDataString }: ClientPageProps) {
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  // 문자열 데이터를 객체로 파싱
+  const resumeData: ParsedResume = useMemo(() => {
+    try {
+      return JSON.parse(resumeDataString);
+    } catch (e) {
+      console.error("Failed to parse resume data", e);
+      return { educations: [], awards: [], certificates: [], experience: [], skills: {} };
+    }
+  }, [resumeDataString]);
 
   const projects = initialProjects;
 
@@ -44,7 +54,6 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* 순수 자기소개만 전달 */}
               <About />
             </div>
           )}
@@ -57,7 +66,6 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "skills" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* 노션에서 가져온 데이터 전달 */}
               <Skills skills={resumeData.skills} />
             </div>
           )}
