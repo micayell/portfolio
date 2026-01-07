@@ -21,8 +21,6 @@ interface TimelineItem {
 }
 
 export default function Resume({ data }: ResumeProps) {
-  console.log("Resume Component Received Data:", data);
-
   const [filter, setFilter] = useState<Category>("all");
 
   // 1. 모든 데이터를 하나의 타임라인 리스트로 통합 및 정렬

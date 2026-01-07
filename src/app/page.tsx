@@ -8,12 +8,7 @@ import ClientPage from "./ClientPage";
 // export const revalidate = 60; 
 
 export default async function Home() {
-  console.log("[Page.tsx] Starting static page generation...");
-  
   const resumeData = await getResumeData();
-  console.log("[Page.tsx] Fetched Resume Data - Skills Categories:", Object.keys(resumeData.skills));
-  console.log("[Page.tsx] Fetched Resume Data - Edu Count:", resumeData.educations.length);
-
   const fetchedProjects = await getProjects();
   
   const projects = [];
@@ -35,8 +30,6 @@ export default async function Home() {
     // 에러 발생 시 빈 배열 반환 (또는 적절한 에러 UI 처리를 위해 빈 배열 유지)
   }
 
-  console.log("[Page.tsx] Passing data to ClientPage...");
-  
   // 직렬화 이슈 방지를 위해 JSON 문자열로 변환하여 전달
   const resumeDataString = JSON.stringify(resumeData);
   

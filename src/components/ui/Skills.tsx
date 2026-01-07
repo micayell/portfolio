@@ -8,9 +8,6 @@ interface SkillsProps {
 }
 
 export default function Skills({ skills }: SkillsProps) {
-  // 디버깅용 로그 추가
-  console.log("Skills Component Received Data:", skills);
-
   // 1. 카테고리 목록 생성 (All + 동적 카테고리)
   const categories = useMemo(() => {
     const cats = Object.keys(skills);
