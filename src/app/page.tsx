@@ -2,10 +2,18 @@ import { getProjects, getPageContent, getResumeData } from "@/lib/notion";
 import ClientPage from "./ClientPage";
 
 // 빌드 타임에 실행됨 (SSG)
-export const revalidate = 60; 
+// GitHub Pages 배포 시 revalidate는 동작하지 않을 수 있으므로 제거하거나, 
+// static export 설정을 확실히 하는 것이 좋습니다. 
+// 일단 제거하여 완전 정적 빌드로 동작하게 합니다.
+// export const revalidate = 60; 
 
 export default async function Home() {
+  console.log("[Page.tsx] Starting static page generation...");
+  
   const resumeData = await getResumeData();
+  console.log("[Page.tsx] Fetched Resume Data - Skills Categories:", Object.keys(resumeData.skills));
+  console.log("[Page.tsx] Fetched Resume Data - Edu Count:", resumeData.educations.length);
+
   const fetchedProjects = await getProjects();
   
   const projects = [];
@@ -27,5 +35,6 @@ export default async function Home() {
     // 에러 발생 시 빈 배열 반환 (또는 적절한 에러 UI 처리를 위해 빈 배열 유지)
   }
 
+  console.log("[Page.tsx] Passing data to ClientPage...");
   return <ClientPage initialProjects={projects} resumeData={resumeData} />;
 }
