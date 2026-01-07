@@ -246,7 +246,12 @@ const getPlainText = (block: any) => {
 
 export async function getResumeData(): Promise<ParsedResume> {
   const pageId = process.env.NOTION_PORTFOLIO_PAGE_ID;
-  if (!pageId)
+  
+  // [디버그 로그 추가]
+  console.log(`[Build Debug] Starting getResumeData. PageID exists: ${!!pageId}`);
+
+  if (!pageId) {
+    console.error("[Build Error] NOTION_PORTFOLIO_PAGE_ID is missing in env variables.");
     return {
       educations: [],
       awards: [],
@@ -254,10 +259,13 @@ export async function getResumeData(): Promise<ParsedResume> {
       experience: [],
       skills: {},
     };
+  }
 
   try {
     // 페이지의 모든 블록 가져오기 (컬럼 레이아웃 포함 평탄화됨)
+    console.log(`[Build Debug] Fetching blocks for PageID: ${pageId}`);
     const blocks = await getPageContent(pageId);
+    console.log(`[Build Debug] Fetched ${blocks.length} blocks.`);
 
     const data: ParsedResume = {
       educations: [],
@@ -461,9 +469,12 @@ export async function getResumeData(): Promise<ParsedResume> {
       }
     }
 
+    // [디버그 로그 추가]
+    console.log(`[Build Debug] Parsing complete. Found: ${data.educations.length} Edu, ${data.experience.length} Exp, ${Object.keys(data.skills).length} Skills categories.`);
+    
     return data;
   } catch (error) {
-    console.error("Error parsing resume data:", error);
+    console.error("[Build Error] Exception in getResumeData:", error);
     return {
       educations: [],
       awards: [],

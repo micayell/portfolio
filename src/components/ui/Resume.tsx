@@ -21,6 +21,8 @@ interface TimelineItem {
 }
 
 export default function Resume({ data }: ResumeProps) {
+  console.log("Resume Component Received Data:", data);
+
   const [filter, setFilter] = useState<Category>("all");
 
   // 1. 모든 데이터를 하나의 타임라인 리스트로 통합 및 정렬
@@ -98,12 +100,12 @@ export default function Resume({ data }: ResumeProps) {
 
   return (
     <section id="resume" className="py-20 max-w-4xl mx-auto px-6">
-      {/* <div className="mb-16 text-center">
+      <div className="mb-16 text-center">
         <h2 className="text-3xl md:text-4xl font-light mb-6">History of CJ</h2>
         <p className="text-gray-500 dark:text-gray-400 font-light">
           끊임없이 성장해온 저의 발자취를 소개합니다.
         </p>
-      </div> */}
+      </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap justify-center gap-3 mb-20 sticky top-24 z-10 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-all">
