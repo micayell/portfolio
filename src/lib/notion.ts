@@ -168,8 +168,8 @@ export async function getProject(slug: string): Promise<Project | null> {
 }
 
 // 2. 페이지의 본문(블록) 내용을 가져오는 함수
-// - column_list와 column을 재귀적으로 순회하며 내부 블록을 평탄화하여 반환
-export async function getPageContent(blockId: string, projectId: string = ""): Promise<any[]> {
+// - column_list와 column을 재귀적으로 순회하며 내부 블록을 평탄화하여 반환 (isFlatten=true)
+export async function getPageContent(blockId: string, projectId: string = "", isFlatten: boolean = true): Promise<any[]> {
   try {
     const response = await notion.blocks.children.list({
       block_id: blockId,
@@ -197,18 +197,30 @@ export async function getPageContent(blockId: string, projectId: string = ""): P
         // [컬럼 레이아웃 처리] column_list -> column -> children
         if (block.type === 'column_list') {
             // column_list 내부의 column들을 가져오고, 그 내부의 블록들을 가져옴
-            const columns = await getPageContent(block.id, projectId);
-            return columns; // 배열의 배열 형태가 됨 (나중에 flat 처리)
+            const columns = await getPageContent(block.id, projectId, isFlatten);
+            
+            if (isFlatten) {
+              return columns; // 배열의 배열 형태가 됨 (나중에 flat 처리)
+            } else {
+              block.children = columns;
+              return block;
+            }
         }
 
         if (block.type === 'column') {
-             const children = await getPageContent(block.id, projectId);
-             return children;
+             const children = await getPageContent(block.id, projectId, isFlatten);
+             
+             if (isFlatten) {
+               return children;
+             } else {
+               block.children = children;
+               return block;
+             }
         }
 
         // [일반 하위 블록 처리] (들여쓰기 내용 가져오기)
         if (block.has_children && block.type !== 'column_list' && block.type !== 'column') {
-          (block as any).children = await getPageContent(block.id, projectId);
+          (block as any).children = await getPageContent(block.id, projectId, isFlatten);
         }
 
         return block;
@@ -216,7 +228,11 @@ export async function getPageContent(blockId: string, projectId: string = ""): P
     );
 
     // 중첩된 배열 평탄화 (column_list/column 처리 결과가 배열로 들어오므로)
-    return processedBlocks.flat(Infinity);
+    if (isFlatten) {
+      return processedBlocks.flat(Infinity);
+    }
+    return processedBlocks;
+
   } catch (error) {
     console.error("Error fetching page content:", error);
     return [];

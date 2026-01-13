@@ -108,6 +108,22 @@ const RenderBlock = ({ block }: { block: any }) => {
           </div>
         </div>
       );
+    case "column_list":
+      return (
+        <div className="flex flex-col md:flex-row gap-6 my-6 w-full">
+          {block.children?.map((col: any) => (
+            <RenderBlock key={col.id} block={col} />
+          ))}
+        </div>
+      );
+    case "column":
+      return (
+        <div className="flex-1 min-w-0">
+          {block.children?.map((child: any) => (
+            <RenderBlock key={child.id} block={child} />
+          ))}
+        </div>
+      );
     default:
       return null;
   }
