@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
   },
   // 배포 환경일 때만 basePath 적용
   basePath: isProd ? `/${repoName}` : "",
+  /** `public/`을 코드에서 문자열로 참조할 때 (예: drei Text `font` URL) */
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isProd ? `/${repoName}` : "",
+  },
 };
 
 export default nextConfig;
