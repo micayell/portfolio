@@ -1,15 +1,14 @@
 "use client";
 
-import { useRef, useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import {
   Image,
   Text,
   Environment,
-  useCursor,
-  useTexture
+  RoundedBox,
 } from "@react-three/drei";
-import * as THREE from "three";
+import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { Project } from "@/types/project";
 import { easing } from "maath";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
@@ -45,8 +44,6 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
 
   return (
     <div className="w-full h-[600px] md:h-[800px] bg-[#e0e0e0] relative group overflow-hidden">
-
-      {/* shadows prop만 남기고 SoftShadows 컴포넌트는 제거 */}
       <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 0, 6.5], fov: 40 }}>
         <Suspense fallback={null}>
           <Scene
@@ -76,39 +73,25 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
           {autoPlay ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
       </div>
-
     </div>
   );
 }
 
 function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[], currentIndex: number, onSelectProject: (p: Project) => void }) {
-  const gap = 10; // 간격을 12로 설정
+  const gap = 10; 
 
   useFrame((state, delta) => {
     const targetX = currentIndex * gap;
     // 1. 카메라 위치 부드럽게 이동
     easing.damp3(state.camera.position, [targetX, 0, 6.5], 0.4, delta);
 
-    // 2. 카메라가 항상 현재 작품(targetX)을 바라보도록 설정 (함수 호출)
+    // 2. 카메라가 항상 현재 작품(targetX)을 바라보도록 설정
     state.camera.lookAt(targetX, 0, 0);
   });
 
   return (
     <>
-      <color attach="background" args={['#e0e0e0']} />
-
-      <ambientLight intensity={0.6} />
-
-      {/* SpotLight 설정 최적화 */}
-      <spotLight
-        position={[currentIndex * gap, 5, 5]}
-        angle={0.5}
-        penumbra={0.5}
-        intensity={1.5}
-        castShadow
-        shadow-bias={-0.0001}
-        shadow-mapSize={[2048, 2048]}
-      />
+      <ambientLight intensity={0.4} />
 
       {/* 1. 벽 (Wall) */}
       <mesh position={[currentIndex * gap, 0, -0.5]} receiveShadow>
@@ -116,13 +99,13 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
         <meshStandardMaterial color="#e8e8e8" roughness={0.5} />
       </mesh>
 
-      {/* 2. 바닥 (Floor) */}
+      {/* 2. 바닥 (Floor) - 은은한 광택이 도는 월넛 우드 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[currentIndex * gap, -2.5, 2]} receiveShadow>
         <planeGeometry args={[100, 10]} />
         <meshStandardMaterial 
-          color="#8d6e63" 
-          roughness={0.4} // 기존 0.2에서 0.4로 올려서 너무 쨍한 반사를 줄임
-          metalness={0.1} 
+          color="#3a2518" 
+          roughness={0.6} // 0.9 -> 0.6 (살짝 코팅된 느낌)
+          metalness={0.1} // 약간의 광택
         />
       </mesh>
 
@@ -149,66 +132,93 @@ function Scene({ projects, currentIndex, onSelectProject }: { projects: Project[
 }
 
 function Frame({ project, position, onSelect }: { project: Project, position: [number, number, number], onSelect: (p: Project) => void }) {
-  const image = useLoader(TextureLoader, project.thumbnailUrl || ""); 
-  const frameWidth = 4.5; 
-  const frameHeight = 3.0;
-  const frameThickness = 0.1;
-  const matWidth = 0.4;
+  // 텍스처 로드해서 원본 비율 계산
+  const texture = useLoader(TextureLoader, project.thumbnailUrl || "");
+  const aspect = texture.image.width / texture.image.height;
   
-  // 이미지 비율 계산 (기본 16:9 가정하에 조정)
-  const imageAspect = 16 / 9;
-  const displayWidth = frameWidth - (matWidth * 2);
-  const displayHeight = displayWidth / imageAspect;
+  // [수정] 스마트 사이징: 최대 너비를 제한하여 캡션 공간 확보
+  const MAX_WIDTH = 4.3; // 액자가 차지할 수 있는 최대 너비
+  const BASE_HEIGHT = 3.0; // 기본 높이
 
-  const fontUrl = "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff"; 
+  let contentWidth = BASE_HEIGHT * aspect;
+  let contentHeight = BASE_HEIGHT;
+
+  // 너비가 너무 길면(와이드 이미지), 너비를 고정하고 높이를 줄임
+  if (contentWidth > MAX_WIDTH) {
+    contentWidth = MAX_WIDTH;
+    contentHeight = MAX_WIDTH / aspect;
+  }
+  
+  const borderSize = 0.1; // 프레임 테두리 두께
+  const frameHeight = contentHeight + (borderSize * 2);
+  const frameWidth = contentWidth + (borderSize * 2);
+  const frameThickness = 0.1;
+
+  // 캡션 위치 자동 계산: 액자 너비의 절반 + 여백(1.2) - 간격 더 넓게 수정
+  const captionX = (frameWidth / 2) + 1;
+
+  /** Troika(drei Text)는 woff2 미지원 — public 동일 출처 woff(v1)만 사용 */
+  const fontRegular = "/fonts/NotoSansKR-400.woff";
+  const fontBold = "/fonts/NotoSansKR-700.woff";
+
   return (
     <group position={position}>
-      {/* 1. 액자 프레임 */}
-      <mesh position={[0, 0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[frameWidth, frameHeight, frameThickness]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.8} />
-      </mesh>
+      {/* 개별 조명: 작품을 비추는 SpotLight */}
+      <spotLight
+        position={[0, 4, 3]}
+        angle={0.6}
+        penumbra={0.5}
+        intensity={2.5}
+        castShadow
+        shadow-bias={-0.0001}
+      />
 
-      {/* 2. 매트 (흰색 테두리) */}
-      <mesh position={[0, 0, frameThickness/2 + 0.01]} receiveShadow>
-        <planeGeometry args={[frameWidth - 0.1, frameHeight - 0.1]} />
-        <meshStandardMaterial color="#f5f5f5" roughness={0.8} />
-      </mesh>
+      {/* 1. 액자 프레임 (동적 크기 적용) */}
+      <RoundedBox 
+        args={[frameWidth, frameHeight, frameThickness]} 
+        radius={0.05} 
+        smoothness={4}
+        position={[0, 0, 0]} 
+        castShadow 
+        receiveShadow
+      >
+        <meshStandardMaterial color="#2a3439" roughness={0.2} metalness={0.8} />
+      </RoundedBox>
 
-      {/* 3. 프로젝트 썸네일 */}
-      <mesh 
-        position={[0, 0, frameThickness/2 + 0.02]} 
+      {/* 2. 이미지 (동적 크기 적용) */}
+      <Image
+        url={project.thumbnailUrl || ""}
+        scale={[contentWidth, contentHeight]} // 계산된 너비/높이 적용 (scale 비율 = 이미지 비율)
+        position={[0, 0, frameThickness / 2 + 0.01]}
         onClick={() => onSelect(project)}
         onPointerOver={() => { document.body.style.cursor = 'pointer' }}
         onPointerOut={() => { document.body.style.cursor = 'auto' }}
-      >
-        <planeGeometry args={[displayWidth, displayHeight]} />
-        <meshBasicMaterial map={image} toneMapped={false} />
-      </mesh>
+        toneMapped={false}
+      />
 
-      {/* 4. 캡션 (가독성 개선 적용됨) */}
-      <group position={[3.2, -0.5, 0]}> 
+      {/* 3. 캡션 (동적 위치) */}
+      <group position={[captionX, -0.5, 0]}> 
         {/* 그림자 메쉬 */}
         <mesh position={[0.05, -0.05, -0.02]} receiveShadow>
           <boxGeometry args={[1.6, 1.2, 0.01]} />
           <meshBasicMaterial color="#000" opacity={0.1} transparent />
         </mesh>
 
-        {/* 캡션 본체 - 약간의 투명도 추가 */}
+        {/* 캡션 본체 */}
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.6, 1.2, 0.02]} /> 
           <meshStandardMaterial 
             color="#ffffff" 
             roughness={0.9} 
             metalness={0.0}
-            transparent={true} // 투명도 활성화
-            opacity={0.95}    // 95% 불투명 (아주 살짝 벽이 비침)
+            transparent={true}
+            opacity={0.95}
             emissive="#ffffff"
             emissiveIntensity={0.1} 
           /> 
         </mesh>
         
-        {/* 텍스트: 진한 검정색 & 크기/행간 조정 */}
+        {/* 텍스트 */}
         <Text
           position={[-0.7, 0.35, 0.03]}
           fontSize={0.15}
@@ -216,8 +226,7 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
           anchorX="left"
           anchorY="middle"
           maxWidth={1.4}
-          font={fontUrl}
-          fontWeight={700}
+          font={fontBold}
         >
           {project.title}
         </Text>
@@ -229,7 +238,7 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
           anchorX="left"
           anchorY="middle"
           maxWidth={1.4}
-          font={fontUrl}
+          font={fontRegular}
         >
           {project.overview.period}
         </Text>
@@ -242,7 +251,7 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
           anchorY="top"
           maxWidth={1.4}
           lineHeight={1.6}
-          font={fontUrl}
+          font={fontRegular}
         >
           {project.description}
         </Text>
@@ -254,7 +263,7 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
           anchorX="left"
           anchorY="middle"
           maxWidth={1.4}
-          font={fontUrl}
+          font={fontRegular}
         >
           {project.tags.slice(0, 3).join("  •  ")}
         </Text>
