@@ -25,13 +25,13 @@ export default function About() {
 
         {/* 1. 프로필 이미지 영역 - 액자 스타일 */}
         <div className="w-full md:w-1/3 flex flex-col items-center">
-          <div className="relative w-full aspect-[3/4] bg-gray-100 dark:bg-zinc-800 p-4 shadow-sm">
+          <div className="relative w-2/3 max-w-[280px] md:w-full md:max-w-none aspect-[3/4] bg-gray-100 dark:bg-zinc-800 p-3 md:p-4 shadow-sm">
             <div className="relative w-full h-full overflow-hidden">
               <Image
                 src={getImagePath("/images/profile.jpg")}
                 alt={profile.name}
                 fill
-                className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                className="object-cover transition-all duration-500"
               />
             </div>
           </div>

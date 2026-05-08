@@ -66,7 +66,7 @@ const mapPageToProject = (page: any): Project => {
   const awardProp = props.Award || props.Prize || props.수상;
   const award = awardProp?.rich_text?.[0]?.plain_text || undefined;
 
-  const figmaProp = props.Figma || props["피그마"];
+  const figmaProp = props.FigmaURL || props.Figma || props["피그마"];
   const figmaUrl =
     figmaProp?.url || figmaProp?.rich_text?.[0]?.plain_text || undefined;
 

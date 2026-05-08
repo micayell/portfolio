@@ -88,7 +88,7 @@ export default function Intro({ onEnter }: IntroProps) {
         <div className="mt-8 space-y-2 flex flex-col items-center">
           {/* 순차적으로 등장 */}
           <TypingText
-            text="Front-end Developer"
+            text="Developer"
             delay={0.5}
             className="text-xl md:text-3xl font-medium text-gray-600 dark:text-gray-400"
           />

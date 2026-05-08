@@ -29,6 +29,38 @@ const Text = ({ text }: { text: any }) => {
   return <span className={styleClasses}>{text.plain_text}</span>;
 };
 
+// --- 블록 그룹화 함수 ---
+const groupBlocks = (blocks: any[]) => {
+  const grouped: any[] = [];
+  let currentList: any[] | null = null;
+  let currentListType: string | null = null;
+
+  for (const block of blocks) {
+    if (block.type === "numbered_list_item" || block.type === "bulleted_list_item") {
+      if (currentListType === block.type) {
+        currentList!.push(block);
+      } else {
+        if (currentList) {
+          grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
+        }
+        currentListType = block.type;
+        currentList = [block];
+      }
+    } else {
+      if (currentList) {
+        grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
+        currentList = null;
+        currentListType = null;
+      }
+      grouped.push(block);
+    }
+  }
+  if (currentList) {
+    grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
+  }
+  return grouped;
+};
+
 // --- 블록 렌더러 ---
 const RenderBlock = ({ block }: { block: any }) => {
   const { type } = block;
@@ -59,23 +91,38 @@ const RenderBlock = ({ block }: { block: any }) => {
           {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
         </h3>
       );
-    case "bulleted_list_item":
+    case "bulleted_list_item_group":
       return (
-        <div className="flex mb-1 ml-4 items-start">
-          <span className="mr-2 text-gray-700 dark:text-gray-300">•</span>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
-            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-          </div>
-        </div>
+        <ul className="list-disc pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
+          {block.items.map((item: any) => (
+            <li key={item.id} className="leading-7">
+              {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            </li>
+          ))}
+        </ul>
       );
-    case "numbered_list_item":
+    case "numbered_list_item_group":
       return (
-        <div className="flex mb-1 ml-4 items-start">
-          <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
+        <ol className="list-decimal pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
+          {block.items.map((item: any) => (
+            <li key={item.id} className="leading-7">
+              {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            </li>
+          ))}
+        </ol>
+      );
+    case "bulleted_list_item":
+    case "numbered_list_item":
+      // 그룹화되지 않은 단일 아이템의 경우 (안전 장치)
+      const isNumbered = type === "numbered_list_item";
+      const ListTag = isNumbered ? "ol" : "ul";
+      const listClass = isNumbered ? "list-decimal" : "list-disc";
+      return (
+        <ListTag className={`${listClass} pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300`}>
+          <li className="leading-7">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-          </div>
-        </div>
+          </li>
+        </ListTag>
       );
     case "image":
       const imageUrl = value.type === "external" ? value.external.url : value.file.url;
@@ -111,7 +158,7 @@ const RenderBlock = ({ block }: { block: any }) => {
     case "column_list":
       return (
         <div className="flex flex-col md:flex-row gap-6 my-6 w-full">
-          {block.children?.map((col: any) => (
+          {groupBlocks(block.children || []).map((col: any) => (
             <RenderBlock key={col.id} block={col} />
           ))}
         </div>
@@ -119,7 +166,7 @@ const RenderBlock = ({ block }: { block: any }) => {
     case "column":
       return (
         <div className="flex-1 min-w-0">
-          {block.children?.map((child: any) => (
+          {groupBlocks(block.children || []).map((child: any) => (
             <RenderBlock key={child.id} block={child} />
           ))}
         </div>
@@ -217,17 +264,17 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {/* Links */}
                   <div className="flex flex-wrap gap-3 mb-12">
                     {project.githubUrl && (
-                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
+                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black border border-transparent rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
                         <Github className="w-4 h-4" /> Source Code
                       </a>
                     )}
                     {project.demoUrl && (
-                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium">
                         <ExternalLink className="w-4 h-4" /> Live Demo
                       </a>
                     )}
                     {project.figmaUrl && (
-                      <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium">
+                      <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-transparent rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors text-sm font-medium">
                         <Figma className="w-4 h-4" /> Design
                       </a>
                     )}
@@ -236,7 +283,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {/* 본문 내용 렌더링 부분 */}
                   <div className="prose dark:prose-invert max-w-none mb-10">
                     {blocks.length > 0 ? (
-                      blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
+                      groupBlocks(blocks).map((block: any) => <RenderBlock key={block.id} block={block} />)
                     ) : (
                       <p className="text-gray-500 italic text-center py-10">
                         작성된 본문 내용이 없습니다.
