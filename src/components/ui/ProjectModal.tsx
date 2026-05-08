@@ -37,9 +37,11 @@ const groupBlocks = (blocks: any[]) => {
 
   for (const block of blocks) {
     if (block.type === "numbered_list_item" || block.type === "bulleted_list_item") {
+      // 리스트 아이템이 연속될 때
       if (currentListType === block.type) {
         currentList!.push(block);
       } else {
+        // 다른 타입의 리스트가 시작될 때 기존 리스트 저장
         if (currentList) {
           grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
         }
@@ -47,6 +49,7 @@ const groupBlocks = (blocks: any[]) => {
         currentList = [block];
       }
     } else {
+      // 리스트가 아닌 일반 블록이 나오면 기존 리스트 저장 후 초기화
       if (currentList) {
         grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
         currentList = null;
@@ -55,6 +58,7 @@ const groupBlocks = (blocks: any[]) => {
       grouped.push(block);
     }
   }
+  // 마지막에 남은 리스트가 있으면 저장
   if (currentList) {
     grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
   }
@@ -104,7 +108,7 @@ const RenderBlock = ({ block }: { block: any }) => {
     case "numbered_list_item_group":
       return (
         <ol className="list-decimal pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
-          {block.items.map((item: any) => (
+          {block.items.map((item: any, index: number) => (
             <li key={item.id} className="leading-7">
               {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
             </li>
@@ -169,6 +173,27 @@ const RenderBlock = ({ block }: { block: any }) => {
           {groupBlocks(block.children || []).map((child: any) => (
             <RenderBlock key={child.id} block={child} />
           ))}
+        </div>
+      );
+    case "table":
+      return (
+        <div className="overflow-x-auto my-8">
+          <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-800">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+              {block.children?.map((row: any, rowIndex: number) => (
+                <tr key={row.id} className={rowIndex === 0 && block.table.has_column_header ? "bg-gray-50 dark:bg-zinc-900 font-semibold" : ""}>
+                  {row.table_row.cells.map((cell: any[], cellIndex: number) => (
+                    <td 
+                      key={cellIndex} 
+                      className={`p-4 border-r border-gray-200 dark:border-gray-800 last:border-r-0 text-sm ${rowIndex === 0 && block.table.has_column_header ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}
+                    >
+                      {cell.map((text: any, i: number) => <Text key={i} text={text} />)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       );
     default:

@@ -128,10 +128,10 @@ export const projects: Project[] = [
   {
     id: "smartwindow",
     title: "SMARTWINDOW",
-    description: "창문형 디스플레이를 활용한 스마트 창문 시스템",
+    description: "'가상 뷰'를 제공하는 창문형 디스플레이",
     tags: ["React Native", "TypeScript", "TanStack Query", "IoT"],
     githubUrl: "https://github.com/S13P31C101/smart-window",
-    award: "특화 프로젝트 우수상",
+    award: "자율 프로젝트 우수상",
     thumbnailUrl: "/images/smartwindow/thumbnail.png",
     figmaUrl:
       "https://www.figma.com/design/C48gQXKjWRSPIRSESz3Hy9/SMART_WINDOW?node-id=0-1&t=aJbPIdDlKUU1xwtS-1",
@@ -140,9 +140,9 @@ export const projects: Project[] = [
       goal: "창문의 물리적 제약(벽 뷰, 사생활 침해)을 디지털 기술로 해결하고 새로운 공간 경험 제공",
       background:
         "답답한 뷰 대신 개방감과 감성적인 뷰로 전환하고, 사용자와 공간이 상호작용하는 미래형 스마트 홈 디바이스 제시",
-      role: "FE(APP) 개발(100%), BE 기능 일부 개발(OAuth, User, Token)",
-      period: "2025.10.13 - 2025.11.20",
-      members: "6인",
+      role: "팀장, BackEnd(20%) 및 Mobile App(FE & UI/UX 100%)",
+      period: "2025.10.13 - 2025.11.20 (6인)",
+      members: "Mobile 1 | Embedded 3 | Backend 1 | AI 1",
     },
 
     skills: [
