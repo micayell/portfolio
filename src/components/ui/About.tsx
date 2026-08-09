@@ -1,17 +1,17 @@
 import Image from "next/image";
 import { profile } from "@/data/about"; // 데이터 import
 import { getImagePath } from "@/lib/utils";
-import { Github, Linkedin, Mail, BookText } from "lucide-react";
+import { Mail, BookText } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ChatInput from "./ChatInput";
 import ContactModal from "./ContactModal";
 import { useState } from "react";
 
 interface AboutProps {
   onSendMessage?: (message: string) => void;
-  projects?: any[];
 }
 
-export default function About({ onSendMessage, projects }: AboutProps) {
+export default function About({ onSendMessage }: AboutProps) {
   const [showContactModal, setShowContactModal] = useState(false);
 
   const quickQuestions = [
@@ -52,7 +52,7 @@ export default function About({ onSendMessage, projects }: AboutProps) {
               className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
               title="Github"
             >
-              <Github size={24} strokeWidth={1.5} />
+              <FaGithub size={24} />
             </a>
             <a
               href={profile.blog}
@@ -70,7 +70,7 @@ export default function About({ onSendMessage, projects }: AboutProps) {
               className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
               title="LinkedIn"
             >
-              <Linkedin size={24} strokeWidth={1.5} />
+              <FaLinkedin size={24} />
             </a>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function About({ onSendMessage, projects }: AboutProps) {
         <div className="flex-1">
           <h2 className="text-3xl md:text-5xl font-light mb-10 leading-tight tracking-tight">
             <span className="block text-gray-400 dark:text-gray-500 text-lg mb-2 uppercase tracking-widest font-normal">
-              Engineer's Philosophy
+              Engineer&apos;s Philosophy
             </span>            I build digital experiences<br />
             that bridge <span className="font-normal italic">gap</span> between<br />
             users and technology.

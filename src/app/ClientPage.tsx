@@ -9,10 +9,20 @@ import Skills from "@/components/ui/Skills";
 import Intro from "@/components/ui/Intro";
 import GalleryScene from "@/components/canvas/GalleryScene";
 import ProjectModal from "@/components/ui/ProjectModal";
-import ChatModal from "@/components/ui/ChatModal";
 import ChatInterface from "@/components/ui/ChatInterface";
 import { Project } from "@/types/project";
 import { ParsedResume } from "@/lib/notion";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: Date;
+  suggestedAction?: {
+    type: "navigate" | "none";
+    target?: string;
+    message?: string;
+  };
+}
 
 interface ClientPageProps {
   initialProjects: Project[];
@@ -24,7 +34,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
-  const [initialChatMessages, setInitialChatMessages] = useState<any[]>([]);
+  const [initialChatMessages, setInitialChatMessages] = useState<Message[]>([]);
 
   const projects = initialProjects;
 
@@ -47,13 +57,14 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
     setInitialChatMessages([]);
   };
 
-  const handleActionClick = (action: any) => {
-    if (action.type === "navigate" && action.target) {
+  const handleActionClick = (action: Message["suggestedAction"]) => {
+    if (action && action.type === "navigate" && action.target) {
+      const target = action.target;
       setShowChatModal(false);
-      setActiveTab(action.target);
+      setActiveTab(target);
       // 해당 섹션으로 스크롤
       setTimeout(() => {
-        const element = document.getElementById(action.target);
+        const element = document.getElementById(target);
         if (element) {
           element.scrollIntoView({ behavior: "smooth" });
         }
@@ -78,7 +89,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <About onSendMessage={handleChatMessage} projects={projects} />
+              <About onSendMessage={handleChatMessage} />
             </div>
           )}
 

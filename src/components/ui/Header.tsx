@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { NAV_ITEMS } from "@/constants/nav";
 
