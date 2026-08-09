@@ -8,7 +8,7 @@ interface ResumeProps {
   data: ParsedResume;
 }
 
-type Category = "all" | "experience" | "education" | "award" | "certificate";
+type Category = "all" | "experience" | "workExperience" | "education" | "award" | "certificate";
 
 interface TimelineItem {
   id: string;
@@ -32,7 +32,19 @@ export default function Resume({ data }: ResumeProps) {
       items.push({
         id: `exp-${i}`,
         category: "experience",
-        categoryTag: exp.category, 
+        categoryTag: exp.category,
+        date: exp.period,
+        title: exp.title,
+        desc: exp.desc,
+      });
+    });
+
+    // Work Experience
+    data.workExperience.forEach((exp, i) => {
+      items.push({
+        id: `work-exp-${i}`,
+        category: "workExperience",
+        categoryTag: exp.category,
         date: exp.period,
         title: exp.title,
         desc: exp.desc,
@@ -90,10 +102,11 @@ export default function Resume({ data }: ResumeProps) {
 
   const categories: { key: Category; label: string }[] = [
     { key: "all", label: "All History" },
-    { key: "experience", label: "Experience" },
-    { key: "education", label: "Education" },
+    { key: "workExperience", label: "Work Experience" },
     { key: "award", label: "Awards" },
     { key: "certificate", label: "Certificates" },
+    { key: "education", label: "Education" },
+    { key: "experience", label: "Experience" },
   ];
 
   return (
@@ -111,7 +124,7 @@ export default function Resume({ data }: ResumeProps) {
           <button
             key={cat.key}
             onClick={() => setFilter(cat.key)}
-            className={`px-5 py-2 rounded-full text-sm transition-all border ${
+            className={`px-5 py-2 rounded-full text-sm transition-all border cursor-pointer ${
               filter === cat.key
                 ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-md"
                 : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 dark:bg-black dark:text-gray-400 dark:border-zinc-800 dark:hover:border-zinc-600"
@@ -139,7 +152,7 @@ export default function Resume({ data }: ResumeProps) {
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-200 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 dark:border-black dark:bg-zinc-800 dark:text-zinc-400">
                 <div
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    item.category === "experience"
+                    item.category === "experience" || item.category === "workExperience"
                       ? "bg-blue-500"
                       : "bg-gray-400 dark:bg-gray-500"
                   }`}
@@ -170,14 +183,14 @@ export default function Resume({ data }: ResumeProps) {
                 <div className="mb-3">
                   <span
                     className={`inline-block text-[10px] px-2 py-0.5 rounded border uppercase tracking-wider font-semibold ${
-                      item.category === "experience"
+                      item.category === "experience" || item.category === "workExperience"
                         ? "border-blue-200 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400"
                         : "border-gray-200 text-gray-400 dark:border-zinc-700 dark:text-zinc-500"
                     }`}
                   >
-                    {item.category === "experience" && item.categoryTag 
-                      ? item.categoryTag 
-                      : item.category}
+                    {(item.category === "experience" || item.category === "workExperience") && item.categoryTag
+                      ? item.categoryTag
+                      : item.category === "workExperience" ? "Work Experience" : item.category}
                   </span>
                 </div>
 

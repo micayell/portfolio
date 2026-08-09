@@ -3,6 +3,8 @@ import { profile } from "@/data/about"; // 데이터 import
 import { getImagePath } from "@/lib/utils";
 import { Github, Linkedin, Mail, BookText } from "lucide-react";
 import ChatInput from "./ChatInput";
+import ContactModal from "./ContactModal";
+import { useState } from "react";
 
 interface AboutProps {
   onSendMessage?: (message: string) => void;
@@ -10,6 +12,8 @@ interface AboutProps {
 }
 
 export default function About({ onSendMessage, projects }: AboutProps) {
+  const [showContactModal, setShowContactModal] = useState(false);
+
   const quickQuestions = [
     "가장 자신 있는 프로젝트는?",
     "기술 스택은?",
@@ -34,18 +38,18 @@ export default function About({ onSendMessage, projects }: AboutProps) {
           </div>
 
           <div className="w-full mt-6 flex justify-center gap-6">
-            <a
-              href={`mailto:${profile.email}`}
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
-              title="Email"
+            <button
+              onClick={() => setShowContactModal(true)}
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
+              title="Contact"
             >
               <Mail size={24} strokeWidth={1.5} />
-            </a>
+            </button>
             <a
               href={profile.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
               title="Github"
             >
               <Github size={24} strokeWidth={1.5} />
@@ -54,7 +58,7 @@ export default function About({ onSendMessage, projects }: AboutProps) {
               href={profile.blog}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
               title="Blog"
             >
               <BookText size={24} strokeWidth={1.5} />
@@ -63,7 +67,7 @@ export default function About({ onSendMessage, projects }: AboutProps) {
               href={profile.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200"
+              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
               title="LinkedIn"
             >
               <Linkedin size={24} strokeWidth={1.5} />
@@ -84,6 +88,8 @@ export default function About({ onSendMessage, projects }: AboutProps) {
           <ChatInput onSendMessage={onSendMessage || (() => {})} quickQuestions={quickQuestions} />
         </div>
       </div>
+
+      <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} />
     </section>
   );
 }

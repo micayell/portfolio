@@ -1,6 +1,7 @@
 import { Client } from "@notionhq/client";
 import { Project } from "@/types/project";
 import { saveImage } from "@/lib/save-image";
+import { NOTION_FIELD_MAPPING, findField, logMissingField } from "@/config/notion-mapping";
 
 if (!process.env.NOTION_API_KEY || !process.env.NOTION_DATABASE_ID) {
   throw new Error("Missing Notion API Key or Database ID");
@@ -11,35 +12,41 @@ const notion = new Client({ auth: process.env.NOTION_API_KEY });
 // 공통 매핑 함수 (노션 페이지 -> 프로젝트 객체)
 const mapPageToProject = (page: any): Project => {
   const props = page.properties;
+  const mapping = NOTION_FIELD_MAPPING.project;
 
   // 1. 제목 (Title)
-  const titleProp = props.Name || props.Title || props.이름 || props.제목;
+  const titleProp = findField(props, mapping.title);
   const title = titleProp?.title?.[0]?.plain_text || "Untitled";
+  if (!titleProp) logMissingField("Title", mapping.title);
 
   // 2. ID (Slug)
-  // 노션 DB에 'ID'라는 텍스트 속성이 없으면 페이지 ID(UUID) 사용
-  const slugProp = props.ID || props.Slug || props.아이디;
+  const slugProp = findField(props, mapping.slug);
   const id = slugProp?.rich_text?.[0]?.plain_text || page.id;
+  if (!slugProp) logMissingField("Slug", mapping.slug);
 
   // 3. 설명 (Description / 프로젝트 개요)
-  const descProp = props.Description || props["프로젝트 개요"] || props.설명;
+  const descProp = findField(props, mapping.description);
   const description = descProp?.rich_text?.[0]?.plain_text || "";
+  if (!descProp) logMissingField("Description", mapping.description);
 
   // 4. 태그 (Tags / 기술스택)
-  const tagsProp =
-    props.Tags || props["기술스택"] || props.TechStack || props.태그;
+  const tagsProp = findField(props, mapping.tags);
   const tags = tagsProp?.multi_select?.map((tag: any) => tag.name) || [];
+  if (!tagsProp) logMissingField("Tags", mapping.tags);
 
   // 5. 썸네일 (커버 이미지 > 파일 속성 순)
   let thumbnailUrl = "/file.svg";
   if (page.cover?.type === "external") thumbnailUrl = page.cover.external.url;
   else if (page.cover?.type === "file") thumbnailUrl = page.cover.file.url;
-  else if (props.Thumbnail?.files?.[0]?.file?.url)
-    thumbnailUrl = props.Thumbnail.files[0].file.url;
+  else {
+    const thumbnailProp = findField(props, mapping.thumbnail);
+    if (thumbnailProp?.files?.[0]?.file?.url) {
+      thumbnailUrl = thumbnailProp.files[0].file.url;
+    }
+  }
 
   // 6. 기간 (Period / Date / 기간 및 인원)
-  const periodProp =
-    props.Period || props.Date || props["기간 및 인원"] || props.기간;
+  const periodProp = findField(props, mapping.period);
   let period = "";
   if (periodProp?.type === "date") {
     period = periodProp.date
@@ -48,41 +55,44 @@ const mapPageToProject = (page: any): Project => {
   } else {
     period = periodProp?.rich_text?.[0]?.plain_text || "";
   }
+  if (!periodProp) logMissingField("Period", mapping.period);
 
   // 7. 역할 (Role / 담당역할)
-  const roleProp = props.Role || props["담당역할"] || props.역할;
+  const roleProp = findField(props, mapping.role);
   const role = roleProp?.rich_text?.[0]?.plain_text || "";
+  if (!roleProp) logMissingField("Role", mapping.role);
 
   // 8. 링크 (Link / 참고 링크 / Github)
-  const linkProp = props.Github || props.Link || props["참고 링크"];
+  const linkProp = findField(props, mapping.link);
   const githubUrl =
     linkProp?.url || linkProp?.rich_text?.[0]?.plain_text || undefined;
+  if (!linkProp) logMissingField("Link", mapping.link);
 
-  // 9. 데모, 수상, 피그마 (해당 속성이 노션에 있다면 추가 매핑)
-  const demoProp = props.Demo || props.Live || props["데모 링크"];
+  // 9. 데모, 수상, 피그마
+  const demoProp = findField(props, mapping.demo);
   const demoUrl =
     demoProp?.url || demoProp?.rich_text?.[0]?.plain_text || undefined;
 
-  const awardProp = props.Award || props.Prize || props.수상;
+  const awardProp = findField(props, mapping.award);
   const award = awardProp?.rich_text?.[0]?.plain_text || undefined;
 
-  const figmaProp = props.FigmaURL || props.Figma || props["피그마"];
+  const figmaProp = findField(props, mapping.figma);
   const figmaUrl =
     figmaProp?.url || figmaProp?.rich_text?.[0]?.plain_text || undefined;
 
-  // 10. 배경 및 목표 (별도 속성이 없으면 설명이나 기본값 사용)
-  const goalProp = props.Goal || props.목표;
-  const goal = goalProp?.rich_text?.[0]?.plain_text || description; // 목표가 없으면 설명 사용
+  // 10. 배경 및 목표
+  const goalProp = findField(props, mapping.goal);
+  const goal = goalProp?.rich_text?.[0]?.plain_text || description;
 
-  const bgProp = props.Background || props.배경;
+  const bgProp = findField(props, mapping.background);
   const background = bgProp?.rich_text?.[0]?.plain_text || "";
 
-  const membersProp = props.Members || props.인원;
+  const membersProp = findField(props, mapping.members);
   const members = membersProp?.rich_text?.[0]?.plain_text || "";
 
   return {
-    id, // URL Slug
-    pageId: page.id, // 실제 Notion Page UUID (본문 조회용)
+    id,
+    pageId: page.id,
     title,
     description,
     tags,
@@ -99,7 +109,6 @@ const mapPageToProject = (page: any): Project => {
       period,
       members,
     },
-    // 태그를 skills 포맷으로 변환
     skills: tags.map((t: string) => ({ name: t, reason: "Used in project" })),
     features: [],
     troubleShooting: [],
@@ -250,6 +259,7 @@ export interface ParsedResume {
   awards: { title: string; date: string; org: string }[];
   certificates: { title: string; date: string; org: string }[];
   experience: { category: string; title: string; period: string; desc: DescriptionItem[] }[];
+  workExperience: { category: string; title: string; period: string; desc: DescriptionItem[] }[];
   skills: Record<string, string[]>;
 }
 
@@ -262,7 +272,7 @@ const getPlainText = (block: any) => {
 
 export async function getResumeData(): Promise<ParsedResume> {
   const pageId = process.env.NOTION_PORTFOLIO_PAGE_ID;
-  
+
   if (!pageId) {
     console.error("[Build Error] NOTION_PORTFOLIO_PAGE_ID is missing in env variables.");
     return {
@@ -270,6 +280,7 @@ export async function getResumeData(): Promise<ParsedResume> {
       awards: [],
       certificates: [],
       experience: [],
+      workExperience: [],
       skills: {},
     };
   }
@@ -283,12 +294,14 @@ export async function getResumeData(): Promise<ParsedResume> {
       awards: [],
       certificates: [],
       experience: [],
+      workExperience: [],
       skills: {},
     };
 
     let currentSection = "";
     let currentCategory = "General"; // Experience 내부 카테고리
     let currentSkillCategory = ""; // Skills 내부 카테고리
+    const sectionMapping = NOTION_FIELD_MAPPING.resume;
 
     for (const block of blocks) {
       if (!("type" in block)) continue;
@@ -296,43 +309,45 @@ export async function getResumeData(): Promise<ParsedResume> {
       const type = block.type;
       const text = getPlainText(block);
 
-      // 1. 섹션 헤더 감지 (#Education, #Awards, #SKILLS)
-      // 노션에서 제목1, 제목2, 제목3 중 하나를 사용했다고 가정
+      // 1. 섹션 헤더 감지 (매핑 설정 사용)
       if (["heading_1", "heading_2", "heading_3"].includes(type)) {
         const lowerText = text.toLowerCase();
-        
-        // 메인 섹션 헤더 감지 시, 무조건 해당 섹션으로 전환 (Skills 모드 해제)
-        if (lowerText.includes("education")) {
+
+        // 메인 섹션 헤더 감지
+        if (sectionMapping.education.some((s) => lowerText.includes(s.toLowerCase()))) {
            currentSection = "education";
            currentSkillCategory = "";
         }
-        else if (lowerText.includes("award")) {
+        else if (sectionMapping.awards.some((s) => lowerText.includes(s.toLowerCase()))) {
            currentSection = "awards";
            currentSkillCategory = "";
         }
-        else if (lowerText.includes("certificate")) {
+        else if (sectionMapping.certificates.some((s) => lowerText.includes(s.toLowerCase()))) {
            currentSection = "certificates";
            currentSkillCategory = "";
         }
-        else if (lowerText.includes("experience")) {
+        else if (sectionMapping.experience.some((s) => lowerText.includes(s.toLowerCase()))) {
           currentSection = "experience";
-          currentCategory = "General"; 
+          currentCategory = "General";
           currentSkillCategory = "";
-        } 
-        else if (lowerText.includes("skill") || lowerText.includes("skills")) {
-           currentSection = "skills";
-           currentSkillCategory = ""; // Skills 섹션 진입 시 초기화
         }
-        
+        else if (sectionMapping.workExperience.some((s) => lowerText.includes(s.toLowerCase()))) {
+          currentSection = "workExperience";
+          currentCategory = "General";
+          currentSkillCategory = "";
+        }
+        else if (sectionMapping.skills.some((s) => lowerText.includes(s.toLowerCase()))) {
+           currentSection = "skills";
+           currentSkillCategory = "";
+        }
         // Skills 섹션 내부에서의 소제목(카테고리) 판별
-        // (단, 위의 메인 섹션 조건에 걸리지 않은 경우에만 여기로 옴)
         else if (currentSection === "skills") {
              currentSkillCategory = text.trim();
              if (!data.skills[currentSkillCategory]) {
                  data.skills[currentSkillCategory] = [];
              }
         }
-        
+
         continue;
       }
 
@@ -385,7 +400,7 @@ export async function getResumeData(): Promise<ParsedResume> {
             let desc: DescriptionItem[] = [];
             if ((block as any).children) desc = collectDesc((block as any).children, 0);
             data.experience.push({ category: "General", title, period, desc });
-          } 
+          }
           else {
             const children = (block as any).children || [];
             let isCategory = false;
@@ -396,7 +411,7 @@ export async function getResumeData(): Promise<ParsedResume> {
                 break;
               }
             }
-            
+
             if (isCategory) {
                currentCategory = text.trim();
                for (const child of children) {
@@ -413,6 +428,63 @@ export async function getResumeData(): Promise<ParsedResume> {
             } else {
                if (data.experience.length > 0) {
                  data.experience[data.experience.length - 1].desc.push({ text, depth: 0 });
+               }
+            }
+          }
+        }
+      }
+
+      // 3-1. Work Experience 파싱 (계층 구조 지원)
+      else if (currentSection === "workExperience") {
+        if (type === "bulleted_list_item") {
+          const dateMatch = text.match(
+            /(\d{4}\.\d{2}(\.\d{2})?(\s*~\s*(\d{4}\.\d{2}(\.\d{2})?|현재|진행중))?)/
+          );
+
+          const collectDesc = (children: any[], currentDepth: number = 0): DescriptionItem[] => {
+             const result: DescriptionItem[] = [];
+             children.forEach(child => {
+                 const t = getPlainText(child);
+                 if(t) result.push({ text: t, depth: currentDepth });
+                 if(child.children) result.push(...collectDesc(child.children, currentDepth + 1));
+             });
+             return result;
+          };
+
+          if (dateMatch) {
+            const period = dateMatch[0].trim();
+            const title = text.replace(period, "").trim();
+            let desc: DescriptionItem[] = [];
+            if ((block as any).children) desc = collectDesc((block as any).children, 0);
+            data.workExperience.push({ category: "General", title, period, desc });
+          }
+          else {
+            const children = (block as any).children || [];
+            let isCategory = false;
+            for (const child of children) {
+              const childText = getPlainText(child);
+              if (childText.match(/(\d{4}\.\d{2})/)) {
+                isCategory = true;
+                break;
+              }
+            }
+
+            if (isCategory) {
+               currentCategory = text.trim();
+               for (const child of children) {
+                 const childText = getPlainText(child);
+                 const childDateMatch = childText.match(/(\d{4}\.\d{2}(\.\d{2})?(\s*~\s*(\d{4}\.\d{2}(\.\d{2})?|현재|진행중))?)/);
+                 if (childDateMatch) {
+                   const p = childDateMatch[0].trim();
+                   const t = childText.replace(p, "").trim();
+                   let d: DescriptionItem[] = [];
+                   if (child.children) d = collectDesc(child.children, 0);
+                   data.workExperience.push({ category: currentCategory, title: t, period: p, desc: d });
+                 }
+               }
+            } else {
+               if (data.workExperience.length > 0) {
+                 data.workExperience[data.workExperience.length - 1].desc.push({ text, depth: 0 });
                }
             }
           }
@@ -455,12 +527,12 @@ export async function getResumeData(): Promise<ParsedResume> {
         }
       }
 
-      // 6. Skills 파싱 (구조 개선: 제목 -> 단락/리스트)
+      // 6. Skills 파싱 (구조 개선: 제목 -> 단락/리스트/표)
       else if (currentSection === "skills") {
         // (1) Callout 방식 (기존 호환성)
         if (type === "callout") {
             const content = (block as any).callout?.rich_text?.map((t: any) => t.plain_text).join("") || "";
-            const match = content.match(/^\[(.*?)\]\s*([\s\S]*)/); 
+            const match = content.match(/^\[(.*?)\]\s*([\s\S]*)/);
             if (match) {
                 const category = match[1].trim();
                 const items = match[2].split(/,|\n/).map((s: string) => s.trim()).filter(Boolean);
@@ -477,6 +549,73 @@ export async function getResumeData(): Promise<ParsedResume> {
                 }
             }
         }
+        // (3) 표(Table) 파싱
+        else if (type === "table") {
+            const table = (block as any).table;
+            if (table && table.children) {
+                table.children.forEach((row: any, rowIndex: number) => {
+                    if (row.type === "table_row" && row.table_row && row.table_row.cells) {
+                        const cells = row.table_row.cells;
+                        // 첫 번째 열을 카테고리로 처리, 나머지 열을 스킬로 처리
+                        if (cells.length > 0) {
+                            const categoryCell = cells[0];
+                            if (categoryCell && categoryCell[0]) {
+                                const categoryText = categoryCell[0].map((t: any) => t.plain_text).join("").trim();
+                                if (categoryText) {
+                                    if (!data.skills[categoryText]) {
+                                        data.skills[categoryText] = [];
+                                    }
+                                    // 나머지 열의 데이터를 해당 카테고리에 추가
+                                    for (let i = 1; i < cells.length; i++) {
+                                        const skillCell = cells[i];
+                                        if (skillCell && skillCell[0]) {
+                                            const skillText = skillCell[0].map((t: any) => t.plain_text).join("").trim();
+                                            if (skillText) {
+                                                data.skills[categoryText].push(skillText);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        // (4) child_database 파싱 (데이터베이스 뷰)
+        else if (type === "child_database") {
+            const dbId = (block as any).id;
+            if (dbId) {
+                // 데이터베이스 쿼리를 통해 데이터 가져오기
+                try {
+                    const dbResponse: any = await notion.request({
+                        path: `databases/${dbId}/query`,
+                        method: "post",
+                    });
+                    if (dbResponse.results) {
+                        dbResponse.results.forEach((page: any) => {
+                            const props = page.properties;
+                            // "분야" 필드를 카테고리로 사용
+                            const categoryProp = props.분야 || props.category || props.Category;
+                            const category = categoryProp?.select?.name || "";
+
+                            // "기술 스택" 필드를 스킬로 사용
+                            const skillProp = props["기술 스택"] || props.skill || props.Skill;
+                            const skill = skillProp?.title?.[0]?.plain_text || skillProp?.rich_text?.[0]?.plain_text || "";
+
+                            if (category && skill) {
+                                if (!data.skills[category]) {
+                                    data.skills[category] = [];
+                                }
+                                data.skills[category].push(skill);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("[Skills Debug] Error querying child_database:", error);
+                }
+            }
+        }
       }
     }
 
@@ -489,6 +628,7 @@ export async function getResumeData(): Promise<ParsedResume> {
       awards: [],
       certificates: [],
       experience: [],
+      workExperience: [],
       skills: {},
     };
   }

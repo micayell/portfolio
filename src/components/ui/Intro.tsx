@@ -6,54 +6,42 @@ interface IntroProps {
   onEnter: () => void;
 }
 
-// 텍스트 애니메이션용 컴포넌트
-const TypingText = ({ text, delay = 0, className = "" }: { text: string; delay?: number; className?: string }) => {
-  // 글자 단위로 분리
-  const letters = Array.from(text);
-
-  const container = {
-    hidden: { opacity: 0 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: delay * i }, // 0.1초 간격으로 글자 등장
-    }),
-  };
-
-  // src/components/ui/Intro.tsx 내부 TypingText 수정
-
-
-  const child = {
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: {
-        type: "spring" as const, // 리터럴 타입 고정
-        damping: 12,
-        stiffness: 100,
-      },
-    },
-    hidden: {
-      opacity: 0,
-      y: 20, // 아래에서 위로 20px 이동
-      filter: "blur(10px)", // 처음엔 흐릿하게
-    },
-  };
+// 스퀴글 비전 애니메이션용 컴포넌트
+const SquiggleText = ({ text, delay = 0, className = "" }: { text: string; delay?: number; className?: string }) => {
+  // 텍스트를 기반으로 고정된 ID 생성 (hydration mismatch 방지)
+  const filterId = `squiggle-${text.replace(/\s/g, '-')}-${delay}`;
 
   return (
-    <motion.div
-      style={{ overflow: "hidden", display: "inline-block" }} // 줄바꿈 방지 및 애니메이션 영역 제한
-      variants={container}
-      initial="hidden"
-      animate="visible"
-      className={className}
-    >
-      {letters.map((letter, index) => (
-        <motion.span variants={child} key={index} style={{ display: "inline-block" }}>
-          {letter === " " ? "\u00A0" : letter} {/* 공백 처리 */}
-        </motion.span>
-      ))}
-    </motion.div>
+    <div className={className} style={{ filter: `url(#${filterId})` }}>
+      <svg style={{ position: "absolute", width: 0, height: 0 }}>
+        <defs>
+          <filter id={filterId}>
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.01"
+              numOctaves="3"
+              result="noise"
+              seed="1"
+            >
+              <animate
+                attributeName="seed"
+                values="1;2;3;4;5;1"
+                dur="0.5s"
+                repeatCount="indefinite"
+              />
+            </feTurbulence>
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="3"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </defs>
+      </svg>
+      {text}
+    </div>
   );
 };
 
@@ -70,7 +58,7 @@ export default function Intro({ onEnter }: IntroProps) {
 
         <div className="relative inline-block">
           {/* PORTFOLIO 텍스트 애니메이션 */}
-          <TypingText
+          <SquiggleText
             text="PORTFOLIO"
             className="text-[12vw] md:text-[10rem] font-black leading-none tracking-tighter text-black dark:text-white mix-blend-overlay"
           />
@@ -78,7 +66,7 @@ export default function Intro({ onEnter }: IntroProps) {
           <motion.span
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.5, type: "spring" }} // PORTFOLIO가 다 써진 뒤 등장
+            transition={{ delay: 1.5, type: "spring" }}
             className="absolute -bottom-4 right-4 text-2xl md:text-4xl font-bold text-blue-600 dark:text-blue-400"
           >
             2026
@@ -87,12 +75,12 @@ export default function Intro({ onEnter }: IntroProps) {
 
         <div className="mt-8 space-y-2 flex flex-col items-center">
           {/* 순차적으로 등장 */}
-          <TypingText
+          <SquiggleText
             text="Developer"
             delay={0.5}
             className="text-xl md:text-3xl font-medium text-gray-600 dark:text-gray-400"
           />
-          <TypingText
+          <SquiggleText
             text="Kim Chang Ju"
             delay={1.2}
             className="text-3xl md:text-5xl font-bold text-black dark:text-white"

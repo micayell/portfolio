@@ -131,7 +131,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
               {/* Content */}
               <div className="p-6 max-h-[600px] overflow-y-auto">
                 <ChatInterface
-                  key={showChatModal}
+                  key={showChatModal ? "open" : "closed"}
                   initialMessages={initialChatMessages}
                   projects={projects}
                   resumeData={resumeData}
