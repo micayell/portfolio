@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import Header from "@/components/ui/Header";
 import About from "@/components/ui/About";
 import Resume from "@/components/ui/Resume";
@@ -8,6 +9,8 @@ import Skills from "@/components/ui/Skills";
 import Intro from "@/components/ui/Intro";
 import GalleryScene from "@/components/canvas/GalleryScene";
 import ProjectModal from "@/components/ui/ProjectModal";
+import ChatModal from "@/components/ui/ChatModal";
+import ChatInterface from "@/components/ui/ChatInterface";
 import { Project } from "@/types/project";
 import { ParsedResume } from "@/lib/notion";
 
@@ -20,11 +23,42 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [initialChatMessages, setInitialChatMessages] = useState<any[]>([]);
 
   const projects = initialProjects;
 
   const handleIntroClick = () => {
     setShowIntro(false);
+  };
+
+  const handleChatMessage = (message: string) => {
+    const userMessage = {
+      role: "user" as const,
+      content: message,
+      timestamp: new Date(),
+    };
+    setInitialChatMessages([userMessage]);
+    setShowChatModal(true);
+  };
+
+  const handleCloseChatModal = () => {
+    setShowChatModal(false);
+    setInitialChatMessages([]);
+  };
+
+  const handleActionClick = (action: any) => {
+    if (action.type === "navigate" && action.target) {
+      setShowChatModal(false);
+      setActiveTab(action.target);
+      // 해당 섹션으로 스크롤
+      setTimeout(() => {
+        const element = document.getElementById(action.target);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -44,7 +78,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <About />
+              <About onSendMessage={handleChatMessage} projects={projects} />
             </div>
           )}
 
@@ -72,6 +106,41 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
         </main>
 
         <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+
+        {showChatModal && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={handleCloseChatModal}
+            />
+            {/* Modal */}
+            <div className="relative w-full max-w-2xl bg-white dark:bg-black rounded-2xl shadow-2xl overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+                <h3 className="text-lg font-semibold text-black dark:text-white">
+                  포트폴리오 어시스턴트
+                </h3>
+                <button
+                  onClick={handleCloseChatModal}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+              {/* Content */}
+              <div className="p-6 max-h-[600px] overflow-y-auto">
+                <ChatInterface
+                  key={showChatModal}
+                  initialMessages={initialChatMessages}
+                  projects={projects}
+                  resumeData={resumeData}
+                  onActionClick={handleActionClick}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <footer className="py-8 text-center text-xs tracking-widest text-gray-400 border-t border-gray-100 dark:border-zinc-900 uppercase">
           © 2026 Kim Chang Ju. All rights reserved.

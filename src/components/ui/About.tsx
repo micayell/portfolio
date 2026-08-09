@@ -2,23 +2,20 @@ import Image from "next/image";
 import { profile } from "@/data/about"; // 데이터 import
 import { getImagePath } from "@/lib/utils";
 import { Github, Linkedin, Mail, BookText } from "lucide-react";
+import ChatInput from "./ChatInput";
 
-// 텍스트 내의 **문자열** 패턴을 찾아 굵게(Strong) 처리하는 헬퍼 함수
-const formatText = (text: string) => {
-  const parts = text.split(/(\*\*.*?\*\*)/g); // **로 감싸진 부분을 분리
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-semibold text-black dark:text-white">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
-};
+interface AboutProps {
+  onSendMessage?: (message: string) => void;
+  projects?: any[];
+}
 
-export default function About() {
+export default function About({ onSendMessage, projects }: AboutProps) {
+  const quickQuestions = [
+    "가장 자신 있는 프로젝트는?",
+    "기술 스택은?",
+    "경력 알려줘",
+  ];
+
   return (
     <section id="about" className="py-20 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-16 items-start">
@@ -74,7 +71,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* 2. 자기소개 텍스트 - 전시 설명 스타일 */}
+        {/* 2. 채팅 입력 필드 */}
         <div className="flex-1">
           <h2 className="text-3xl md:text-5xl font-light mb-10 leading-tight tracking-tight">
             <span className="block text-gray-400 dark:text-gray-500 text-lg mb-2 uppercase tracking-widest font-normal">
@@ -84,11 +81,7 @@ export default function About() {
             users and technology.
           </h2>
 
-          <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 space-y-6 font-light leading-loose text-lg">
-            {profile.description.map((desc, index) => (
-              <p key={index}>{formatText(desc)}</p>
-            ))}
-          </div>
+          <ChatInput onSendMessage={onSendMessage || (() => {})} quickQuestions={quickQuestions} />
         </div>
       </div>
     </section>
