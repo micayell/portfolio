@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import AppLayout from "@/components/layout/AppLayout";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
 
 const siteTitle = "CJ's Interactive Portfolio";
 const siteDescription = "3D와 AI 챗봇으로 구현한 인터랙티브 포트폴리오입니다.";
-const siteUrl = "https://your-portfolio-url.com"; // 실제 배포된 URL로 변경해주세요.
+const siteUrl = "https://gukkaebi-portfolio.vercel.app/"; // 실제 배포된 URL로 변경해주세요.
 
 export const metadata: Metadata = {
   title: siteTitle,
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </AppLayout>
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

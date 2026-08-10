@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
     "@notionhq/client": "^2.2.15",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
@@ -16,6 +17,7 @@
     "@types/three": "^0.182.0",
     "@use-gesture/react": "^10.3.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^17.2.3",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.26",

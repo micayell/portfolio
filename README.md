@@ -2,7 +2,7 @@
 
 <div align="center">
   <p>
-    <strong><a href="[https://your-portfolio-url.com](https://gukkaebi-portfolio-e9xl83hmf-gukkaebi.vercel.app/)" target="_blank">Live Demo</a></strong>
+    <strong><a href="https://gukkaebi-portfolio.vercel.app/" target="_blank">Live Demo</a></strong>
   </p>
 </div>
 
@@ -15,7 +15,7 @@
 ## 주요 기능
 
 -   **인터랙티브 3D 갤러리**: `react-three-fiber`와 `drei`를 사용하여 프로젝트를 3D 공간에 전시하고, 사용자가 직접 탐색하며 둘러볼 수 있는 환경을 제공합니다.
--   **AI 챗봇 어시스턴트**: 포트폴리오에 대한 정보를 대화형으로 제공하는 AI 챗봇을 구현했습니다. Next.js API Route와 Vercel AI SDK를 활용했습니다.
+-   **AI 챗봇 어시스턴트**: 포트폴리오에 대한 정보를 대화형으로 제공하는 AI 챗봇을 구현했습니다. Next.js API Route, Vercel AI SDK, 그리고 Groq API를 활용하여 빠른 응답 속도를 확보했습니다.
 -   **Notion 기반 Headless CMS**: 프로젝트, 이력서, 기술 스택 등 웹사이트의 모든 콘텐츠를 Notion 데이터베이스에서 관리합니다. 이를 통해 코드 수정 없이 실시간으로 콘텐츠 업데이트가 가능합니다.
 -   **반응형 디자인**: 데스크톱부터 모바일 기기까지 모든 화면 크기에서 최적의 사용자 경험을 제공하도록 설계되었습니다.
 -   **테마 전환**: 사용자의 시스템 설정에 따라 다크/라이트 모드를 자동으로 적용하며, 수동 전환도 지원합니다.
@@ -30,7 +30,7 @@
 | **Frontend**  | `Next.js`, `React`, `TypeScript`, `Tailwind CSS`                                                         |
 | **3D**        | `Three.js`, `React Three Fiber`, `Drei`, `Maath`                                                         |
 | **Animation** | `Framer Motion`, `@use-gesture/react`                                                                    |
-| **Backend**   | `Next.js API Routes`, `Vercel AI SDK`                                                                    |
+| **Backend**   | `Next.js API Routes`, `Vercel AI SDK`, `Groq API`                                                        |
 | **CMS**       | `Notion API`                                                                                             |
 | **Deployment**| `Vercel`                                                                                                 |
 | **Analytics** | `@vercel/analytics`                                                                                      |
@@ -69,7 +69,7 @@
 
 **문제 인식:** 사용자가 포트폴리오에 대해 궁금한 점이 생겼을 때, 수동적으로 정보를 찾는 대신 즉각적인 답변을 얻을 수 있는 창구가 필요하다고 판단했습니다.
 
-**해결 방안:** Vercel AI SDK와 Next.js API Route를 활용하여 AI 챗봇을 구현했습니다.
+**해결 방안:** Vercel AI SDK와 Groq API를 활용하여 빠른 응답 속도를 가진 AI 챗봇을 구현했습니다.
 
 -   **서버리스 백엔드**: Next.js의 API Route를 사용하여 별도의 서버 없이 백엔드 로직을 구현했습니다. 사용자의 질문, 대화 기록, Notion에서 가져온 프로젝트/이력서 데이터를 함께 AI 모델에 전달하여 컨텍스트에 맞는 답변을 생성하도록 했습니다.
 -   **스트리밍 응답**: Vercel AI SDK의 `StreamingTextResponse`를 사용하여, AI가 생성하는 답변을 실시간 스트리밍 형태로 프론트엔드에 전송했습니다. 이를 통해 사용자는 실제 대화처럼 즉각적인 피드백을 받을 수 있어 UX가 크게 향상되었습니다.
@@ -100,8 +100,8 @@
     NOTION_DATABASE_ID=
     NOTION_PORTFOLIO_PAGE_ID=
 
-    # OpenAI (Optional)
-    OPENAI_API_KEY=
+    # Groq AI
+    GROQ_API_KEY=
     ```
 
 4.  **개발 서버 실행**
