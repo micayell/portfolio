@@ -20,6 +20,26 @@ export default function About({ onSendMessage }: AboutProps) {
     "경력 알려줘",
   ];
 
+  const socialLinks = [
+    {
+      href: profile.github,
+      title: "Github",
+      icon: <FaGithub size={24} />,
+    },
+    {
+      href: profile.blog,
+      title: "Blog",
+      icon: <BookText size={24} strokeWidth={1.5} />,
+    },
+    {
+      href: profile.linkedin,
+      title: "LinkedIn",
+      icon: <FaLinkedin size={24} />,
+    },
+  ];
+
+  const commonLinkClasses = "text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer";
+
   return (
     <section id="about" className="py-20 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-16 items-start">
@@ -32,6 +52,7 @@ export default function About({ onSendMessage }: AboutProps) {
                 src={getImagePath("/images/profile.jpg")}
                 alt={profile.name}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover transition-all duration-500"
               />
             </div>
@@ -39,39 +60,24 @@ export default function About({ onSendMessage }: AboutProps) {
 
           <div className="w-full mt-6 flex justify-center gap-6">
             <button
-              onClick={() => setShowContactModal(true)}
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
+              onClick={() => setShowContactModal(true)} // Contact 버튼은 모달을 열어야 하므로 별도로 둡니다.
+              className={commonLinkClasses}
               title="Contact"
             >
               <Mail size={24} strokeWidth={1.5} />
             </button>
-            <a
-              href={profile.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
-              title="Github"
-            >
-              <FaGithub size={24} />
-            </a>
-            <a
-              href={profile.blog}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
-              title="Blog"
-            >
-              <BookText size={24} strokeWidth={1.5} />
-            </a>
-            <a
-              href={profile.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer"
-              title="LinkedIn"
-            >
-              <FaLinkedin size={24} />
-            </a>
+            {socialLinks.map((link) => (
+              <a
+                key={link.title}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={commonLinkClasses}
+                title={link.title}
+              >
+                {link.icon}
+              </a>
+            ))}
           </div>
         </div>
 

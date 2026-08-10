@@ -50,9 +50,9 @@ export const projects: Project[] = [
 
     troubleShooting: [
       {
-        problem: "GitHub Pages 배포 시 이미지 경로 깨짐",
+        problem: "이미지 경로 관리",
         solution:
-          "Next.js의 basePath 설정을 환경변수로 분기 처리하여 로컬과 프로덕션 환경 모두 대응",
+          "Vercel 배포 환경에서는 별도의 basePath 설정 없이 절대 경로 사용",
         result: "배포 후에도 이미지가 정상적으로 로딩되도록 개선",
       },
     ],

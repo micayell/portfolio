@@ -31,5 +31,5 @@ export interface Project {
         solution: string;
         result: string;
     }[];
-    blocks?: any[];
+    blocks?: unknown[];
   }

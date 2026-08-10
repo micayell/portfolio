@@ -8,7 +8,6 @@ import {
   Environment,
   RoundedBox,
 } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { Project } from "@/types/project";
 import { easing } from "maath";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
@@ -157,10 +156,9 @@ function Frame({ project, position, onSelect }: { project: Project, position: [n
   // 캡션 위치 자동 계산: 액자 너비의 절반 + 여백(1.2) - 간격 더 넓게 수정
   const captionX = (frameWidth / 2) + 1;
 
-  /** Troika는 woff2 미지원. GitHub Pages는 basePath라 `/fonts`만 쓰면 도메인 루트로 404 */
-  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-  const fontRegular = `${base}/fonts/NotoSansKR-400.woff`;
-  const fontBold = `${base}/fonts/NotoSansKR-700.woff`;
+  /** Troika는 woff2 미지원 */
+  const fontRegular = "/fonts/NotoSansKR-400.woff";
+  const fontBold = "/fonts/NotoSansKR-700.woff";
 
   return (
     <group position={position}>

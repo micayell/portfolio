@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion"; // framer-motion import
+import { motion } from "framer-motion";
 
 interface IntroProps {
   onEnter: () => void;
@@ -87,13 +87,11 @@ export default function Intro({ onEnter }: IntroProps) {
           />
         </div>
       </div>
-      {/* ... 기존 코드 ... */}
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.5, duration: 1 }}
-        // 👇 수정된 클래스: bottom-20으로 올리고, 텍스트 크기(text-xl)와 굵기(font-medium) 증가
         className="absolute bottom-32 md:bottom-24 text-gray-500 dark:text-gray-400 text-lg md:text-xl font-medium animate-pulse pointer-events-none"
       >
         Click anywhere to enter

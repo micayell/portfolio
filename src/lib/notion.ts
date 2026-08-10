@@ -1,7 +1,8 @@
 import { Client } from "@notionhq/client";
 import { Project } from "@/types/project";
-import { saveImage } from "@/lib/save-image";
 import { NOTION_FIELD_MAPPING, findField, logMissingField } from "@/config/notion-mapping";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 if (!process.env.NOTION_API_KEY || !process.env.NOTION_DATABASE_ID) {
   throw new Error("Missing Notion API Key or Database ID");
@@ -16,79 +17,83 @@ const mapPageToProject = (page: any): Project => {
 
   // 1. 제목 (Title)
   const titleProp = findField(props, mapping.title);
-  const title = titleProp?.title?.[0]?.plain_text || "Untitled";
+  const title = (titleProp as any)?.title?.[0]?.plain_text || "Untitled";
   if (!titleProp) logMissingField("Title", mapping.title);
 
   // 2. ID (Slug)
   const slugProp = findField(props, mapping.slug);
-  const id = slugProp?.rich_text?.[0]?.plain_text || page.id;
+  const id = (slugProp as any)?.rich_text?.[0]?.plain_text || page.id;
   if (!slugProp) logMissingField("Slug", mapping.slug);
 
   // 3. 설명 (Description / 프로젝트 개요)
   const descProp = findField(props, mapping.description);
-  const description = descProp?.rich_text?.[0]?.plain_text || "";
+  const description = (descProp as any)?.rich_text?.[0]?.plain_text || "";
   if (!descProp) logMissingField("Description", mapping.description);
 
   // 4. 태그 (Tags / 기술스택)
   const tagsProp = findField(props, mapping.tags);
-  const tags = tagsProp?.multi_select?.map((tag: any) => tag.name) || [];
+  const tags = (tagsProp as any)?.multi_select?.map((tag: any) => tag.name) || [];
   if (!tagsProp) logMissingField("Tags", mapping.tags);
 
   // 5. 썸네일 (커버 이미지 > 파일 속성 순)
-  let thumbnailUrl = "/file.svg";
-  if (page.cover?.type === "external") thumbnailUrl = page.cover.external.url;
-  else if (page.cover?.type === "file") thumbnailUrl = page.cover.file.url;
-  else {
+  let thumbnailUrl;
+  if (page.cover?.type === "external") {
+    thumbnailUrl = page.cover.external.url;
+  } else if (page.cover?.type === "file") {
+    thumbnailUrl = page.cover.file.url;
+  } else {
     const thumbnailProp = findField(props, mapping.thumbnail);
-    if (thumbnailProp?.files?.[0]?.file?.url) {
-      thumbnailUrl = thumbnailProp.files[0].file.url;
+    if ((thumbnailProp as any)?.files?.[0]?.file?.url) {
+      thumbnailUrl = (thumbnailProp as any).files[0].file.url;
+    } else {
+      thumbnailUrl = "/file.svg";
     }
   }
 
   // 6. 기간 (Period / Date / 기간 및 인원)
   const periodProp = findField(props, mapping.period);
   let period = "";
-  if (periodProp?.type === "date") {
-    period = periodProp.date
-      ? `${periodProp.date.start} ~ ${periodProp.date.end || "진행중"}`
+  if ((periodProp as any)?.type === "date") {
+    period = (periodProp as any).date
+      ? `${(periodProp as any).date.start} ~ ${(periodProp as any).date.end || "진행중"}`
       : "";
   } else {
-    period = periodProp?.rich_text?.[0]?.plain_text || "";
+    period = (periodProp as any)?.rich_text?.[0]?.plain_text || "";
   }
   if (!periodProp) logMissingField("Period", mapping.period);
 
   // 7. 역할 (Role / 담당역할)
   const roleProp = findField(props, mapping.role);
-  const role = roleProp?.rich_text?.[0]?.plain_text || "";
+  const role = (roleProp as any)?.rich_text?.[0]?.plain_text || "";
   if (!roleProp) logMissingField("Role", mapping.role);
 
   // 8. 링크 (Link / 참고 링크 / Github)
   const linkProp = findField(props, mapping.link);
   const githubUrl =
-    linkProp?.url || linkProp?.rich_text?.[0]?.plain_text || undefined;
+    (linkProp as any)?.url || (linkProp as any)?.rich_text?.[0]?.plain_text || undefined;
   if (!linkProp) logMissingField("Link", mapping.link);
 
   // 9. 데모, 수상, 피그마
   const demoProp = findField(props, mapping.demo);
   const demoUrl =
-    demoProp?.url || demoProp?.rich_text?.[0]?.plain_text || undefined;
+    (demoProp as any)?.url || (demoProp as any)?.rich_text?.[0]?.plain_text || undefined;
 
   const awardProp = findField(props, mapping.award);
-  const award = awardProp?.rich_text?.[0]?.plain_text || undefined;
+  const award = (awardProp as any)?.rich_text?.[0]?.plain_text || undefined;
 
   const figmaProp = findField(props, mapping.figma);
   const figmaUrl =
-    figmaProp?.url || figmaProp?.rich_text?.[0]?.plain_text || undefined;
+    (figmaProp as any)?.url || (figmaProp as any)?.rich_text?.[0]?.plain_text || undefined;
 
   // 10. 배경 및 목표
   const goalProp = findField(props, mapping.goal);
-  const goal = goalProp?.rich_text?.[0]?.plain_text || description;
+  const goal = (goalProp as any)?.rich_text?.[0]?.plain_text || description;
 
   const bgProp = findField(props, mapping.background);
-  const background = bgProp?.rich_text?.[0]?.plain_text || "";
+  const background = (bgProp as any)?.rich_text?.[0]?.plain_text || "";
 
   const membersProp = findField(props, mapping.members);
-  const members = membersProp?.rich_text?.[0]?.plain_text || "";
+  const members = (membersProp as any)?.rich_text?.[0]?.plain_text || "";
 
   return {
     id,
@@ -130,24 +135,8 @@ export async function getProjects(): Promise<Project[]> {
       },
     });
 
-    // 1. 일단 Notion 데이터로 매핑
-    const projects = response.results.map(mapPageToProject);
-
-    // 2. [추가] 썸네일 이미지를 다운로드하고 경로를 교체
-    // Promise.all로 병렬 처리하여 빌드 속도 저하 최소화
-    const projectsWithLocalImages = await Promise.all(
-      projects.map(async (project: Project) => {
-        // Notion URL인 경우에만 다운로드 시도
-        if (project.thumbnailUrl && project.thumbnailUrl.startsWith("http")) {
-          // [수정] 썸네일 저장: projectId, "thumbnail"
-          const localUrl = await saveImage(project.thumbnailUrl, project.id, "thumbnail");
-          return { ...project, thumbnailUrl: localUrl };
-        }
-        return project;
-      })
-    );
-
-    return projectsWithLocalImages;
+    // Notion URL을 그대로 사용 (Vercel 서버리스 환경 호환)
+    return response.results.map(mapPageToProject);
   } catch (error: any) {
     console.error("❌ Notion API Error:", error.body || error.message);
     return [];
@@ -188,20 +177,7 @@ export async function getPageContent(blockId: string, projectId: string = "", is
 
     const processedBlocks = await Promise.all(
       blocks.map(async (block: any) => {
-        // [이미지 처리]
-        if (projectId && block.type === 'image') {
-          const imageInfo = block.image;
-          let imageUrl = "";
-          
-          if (imageInfo.type === 'external') imageUrl = imageInfo.external.url;
-          else if (imageInfo.type === 'file') imageUrl = imageInfo.file.url;
-          
-          if (imageUrl) {
-            const localUrl = await saveImage(imageUrl, projectId, block.id);
-            if (imageInfo.type === 'external') imageInfo.external.url = localUrl;
-            else if (imageInfo.type === 'file') imageInfo.file.url = localUrl;
-          }
-        }
+        // 이미지 URL을 그대로 사용 (다운로드 제거)
 
         // [컬럼 레이아웃 처리] column_list -> column -> children
         if (block.type === 'column_list') {
@@ -496,7 +472,7 @@ export async function getResumeData(): Promise<ParsedResume> {
         if (type === "bulleted_list_item") {
           const dateMatch = text.match(/^\d{4}\.\d{2}(\.\d{2})?/);
           const date = dateMatch ? dateMatch[0] : "";
-          let content = text.replace(date, "").trim();
+          const content = text.replace(date, "").trim();
           const orgMatch = content.match(/\(([^)]+)\)$/); // 마지막 괄호 안 내용
           let org = "";
           let title = content;
@@ -514,7 +490,7 @@ export async function getResumeData(): Promise<ParsedResume> {
         if (type === "bulleted_list_item") {
           const dateMatch = text.match(/^\d{4}\.\d{2}(\.\d{2})?/);
           const date = dateMatch ? dateMatch[0] : "";
-          let content = text.replace(date, "").trim();
+          const content = text.replace(date, "").trim();
           const orgMatch = content.match(/\(([^)]+)\)$/);
           let org = "";
           let title = content;
@@ -532,17 +508,17 @@ export async function getResumeData(): Promise<ParsedResume> {
         // (1) Callout 방식 (기존 호환성)
         if (type === "callout") {
             const content = (block as any).callout?.rich_text?.map((t: any) => t.plain_text).join("") || "";
-            const match = content.match(/^\[(.*?)\]\s*([\s\S]*)/);
+            const match = content.match(/^\[(.*?)]\s*([\s\S]*)/);
             if (match) {
                 const category = match[1].trim();
-                const items = match[2].split(/,|\n/).map((s: string) => s.trim()).filter(Boolean);
+                const items = match[2].split(/[,\\n]/).map((s: string) => s.trim()).filter(Boolean);
                 if (items.length > 0) data.skills[category] = items;
             }
         }
         // (2) 일반 텍스트 (Paragraph) -> 스킬 목록으로 추가
         else if (type === "paragraph") {
             if (currentSkillCategory && text.trim()) {
-                const items = text.split(/\n|,/).map((s: string) => s.trim()).filter(Boolean);
+                const items = text.split(/[,\\n]/).map((s: string) => s.trim()).filter(Boolean);
                 if (items.length > 0) {
                     if (!data.skills[currentSkillCategory]) data.skills[currentSkillCategory] = [];
                     data.skills[currentSkillCategory].push(...items);
@@ -553,7 +529,7 @@ export async function getResumeData(): Promise<ParsedResume> {
         else if (type === "table") {
             const table = (block as any).table;
             if (table && table.children) {
-                table.children.forEach((row: any, rowIndex: number) => {
+                table.children.forEach((row: any) => {
                     if (row.type === "table_row" && row.table_row && row.table_row.cells) {
                         const cells = row.table_row.cells;
                         // 첫 번째 열을 카테고리로 처리, 나머지 열을 스킬로 처리

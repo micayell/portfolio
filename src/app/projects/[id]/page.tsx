@@ -1,7 +1,9 @@
 import { getProject, getPageContent, getProjects } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import TroubleShooting from "@/components/ui/TroubleShooting";
+
+// ISR: 1시간마다 데이터 갱신
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -11,7 +13,22 @@ export async function generateStaticParams() {
 }
 
 // 텍스트 스타일 렌더러
-const Text = ({ text }: { text: any }) => {
+interface TextAnnotation {
+  bold?: boolean;
+  italic?: boolean;
+  strikethrough?: boolean;
+  underline?: boolean;
+  code?: boolean;
+  color?: string;
+}
+
+interface TextObject {
+  plain_text: string;
+  href?: string;
+  annotations: TextAnnotation;
+}
+
+const Text = ({ text }: { text: TextObject }) => {
   if (!text) return null;
   const { annotations } = text;
   
@@ -35,33 +52,48 @@ const Text = ({ text }: { text: any }) => {
 };
 
 // 블록 렌더러
-const RenderBlock = ({ block }: { block: any }) => {
+interface BlockValue {
+  rich_text?: TextObject[];
+  caption?: TextObject[];
+  external?: { url: string };
+  file?: { url: string };
+  icon?: { emoji?: string };
+  type?: "external" | "file";
+}
+
+interface Block {
+  id: string;
+  type: string;
+  [key: string]: BlockValue | unknown;
+}
+
+const RenderBlock = ({ block }: { block: Block }) => {
   const { type } = block;
-  const value = block[type];
+  const value = block[type] as BlockValue;
 
   switch (type) {
     case "paragraph":
       return (
         <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
         </p>
       );
     case "heading_1":
       return (
         <h1 className="text-3xl font-bold mt-12 mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
         </h1>
       );
     case "heading_2":
       return (
         <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-blue-500 pl-3">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
         </h2>
       );
     case "heading_3":
       return (
         <h3 className="text-xl font-semibold mt-6 mb-2">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
         </h3>
       );
     case "bulleted_list_item":
@@ -69,7 +101,7 @@ const RenderBlock = ({ block }: { block: any }) => {
         <div className="flex mb-1 ml-4 items-start">
           <span className="mr-2 text-gray-700 dark:text-gray-300">•</span>
           <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+             {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
           </div>
         </div>
       );
@@ -78,12 +110,12 @@ const RenderBlock = ({ block }: { block: any }) => {
         <div className="flex mb-1 ml-4 items-start">
           <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
           <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+             {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
           </div>
         </div>
       );
     case "image":
-      const imageUrl = value.type === "external" ? value.external.url : value.file.url;
+      const imageUrl = value.type === "external" ? value.external?.url : value.file?.url || "";
       const caption = value.caption?.[0]?.plain_text || "";
       return (
         <figure className="my-8 flex flex-col items-center">
@@ -101,7 +133,7 @@ const RenderBlock = ({ block }: { block: any }) => {
     case "quote":
       return (
         <blockquote className="border-l-4 border-gray-300 pl-4 py-1 my-4 italic text-gray-600 dark:text-gray-400">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
         </blockquote>
       );
     case "callout":
@@ -109,7 +141,7 @@ const RenderBlock = ({ block }: { block: any }) => {
         <div className="flex p-4 my-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
           <div className="mr-3 text-xl">{value.icon?.emoji || "💡"}</div>
           <div className="text-gray-700 dark:text-gray-300 leading-7">
-            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
           </div>
         </div>
       );
@@ -171,7 +203,7 @@ export default async function ProjectDetail({
       {/* 본문 렌더링 */}
       <section className="prose dark:prose-invert max-w-none mb-20">
         {blocks.length > 0 ? (
-          blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
+          blocks.map((block: Block) => <RenderBlock key={block.id} block={block} />)
         ) : (
           <p className="text-gray-500 italic text-center py-10">작성된 본문 내용이 없습니다.</p>
         )}

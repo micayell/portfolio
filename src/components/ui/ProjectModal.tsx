@@ -1,9 +1,12 @@
+// src/components/ui/ProjectModal.tsx
 "use client";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Project } from "@/types/project";
-import { X, Github, ExternalLink, Award, Figma } from "lucide-react";
-import Image from "next/image";
+// lucide-react 대신 react-icons/fa 임포트
+import { FaTimes, FaGithub, FaExternalLinkAlt, FaAward, FaFigma } from "react-icons/fa";
 
 // --- 텍스트 렌더러 ---
 const Text = ({ text }: { text: any }) => {
@@ -108,7 +111,7 @@ const RenderBlock = ({ block }: { block: any }) => {
     case "numbered_list_item_group":
       return (
         <ol className="list-decimal pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
-          {block.items.map((item: any, index: number) => (
+          {block.items.map((item: any) => (
             <li key={item.id} className="leading-7">
               {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
             </li>
@@ -243,7 +246,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     </span>
                     {project.award && (
                       <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-[10px] font-bold tracking-widest uppercase bg-amber-50 dark:bg-amber-900/10 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
-                        <Award className="w-3 h-3" /> {project.award}
+                        <FaAward className="w-3 h-3" /> {project.award}
                       </span>
                     )}
                   </div>
@@ -255,7 +258,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   </p>
                 </div>
                 <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800">
-                  <X className="w-6 h-6 text-gray-500" />
+                  <FaTimes className="w-6 h-6 text-gray-500" />
                 </button>
               </div>
 
@@ -289,18 +292,20 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {/* Links */}
                   <div className="flex flex-wrap gap-3 mb-12">
                     {project.githubUrl && (
+                      // eslint-disable-next-line @next/next/no-html-link-for-pages
                       <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black border border-transparent rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
-                        <Github className="w-4 h-4" /> Source Code
+                        <FaGithub className="w-4 h-4" /> Source Code
                       </a>
                     )}
                     {project.demoUrl && (
+                      // eslint-disable-next-line @next/next/no-html-link-for-pages
                       <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium">
-                        <ExternalLink className="w-4 h-4" /> Live Demo
+                        <FaExternalLinkAlt className="w-4 h-4" /> Live Demo
                       </a>
                     )}
                     {project.figmaUrl && (
                       <a href={project.figmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-transparent rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors text-sm font-medium">
-                        <Figma className="w-4 h-4" /> Design
+                        <FaFigma className="w-4 h-4" /> Design
                       </a>
                     )}
                   </div>

@@ -24,6 +24,12 @@ interface Message {
   };
 }
 
+interface SuggestedAction {
+  type: "navigate" | "none";
+  target?: string;
+  message?: string;
+}
+
 interface ClientPageProps {
   initialProjects: Project[];
   resumeData: ParsedResume;
@@ -57,8 +63,8 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
     setInitialChatMessages([]);
   };
 
-  const handleActionClick = (action: Message["suggestedAction"]) => {
-    if (action && action.type === "navigate" && action.target) {
+  const handleActionClick = (action: SuggestedAction) => {
+    if (action.type === "navigate" && action.target) {
       const target = action.target;
       setShowChatModal(false);
       setActiveTab(target);

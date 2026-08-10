@@ -1,14 +1,16 @@
-"use client"; // 👈 클라이언트 컴포넌트 선언
+"use client";
 
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, Terminal } from "lucide-react";
 
+interface TroubleShootingData {
+  problem: string;
+  solution: string;
+  result: string;
+}
+
 interface TroubleShootingItemProps {
-  ts: {
-    problem: string;
-    solution: string;
-    result: string;
-  };
+  ts: TroubleShootingData;
   index: number;
 }
 
@@ -75,7 +77,7 @@ function TroubleShootingItem({ ts, index }: TroubleShootingItemProps) {
   );
 }
 
-export default function TroubleShooting({ items }: { items: any[] }) {
+export default function TroubleShooting({ items }: { items: TroubleShootingData[] }) {
   return (
     <section>
       <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
