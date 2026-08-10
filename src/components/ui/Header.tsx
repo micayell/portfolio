@@ -63,7 +63,7 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 z-[60] relative">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -76,9 +76,10 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-white/95 dark:bg-black/95 backdrop-blur-md z-40"
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 top-0 bg-white dark:bg-black z-50"
           >
-            <div className="flex flex-col items-center justify-center h-full">
+            <div className="flex flex-col items-center justify-center h-full pt-16">
               <ul className="flex flex-col items-center space-y-8 text-lg uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 {NAV_ITEMS.map((item) => (
                   <li key={item.id}>

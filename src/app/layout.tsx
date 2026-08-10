@@ -15,9 +15,35 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteTitle = "CJ's Interactive Portfolio";
+const siteDescription = "3D와 AI 챗봇으로 구현한 인터랙티브 포트폴리오입니다.";
+const siteUrl = "https://your-portfolio-url.com"; // 실제 배포된 URL로 변경해주세요.
+
 export const metadata: Metadata = {
-  title: "CJ's Portfolio",
-  description: "내 포트폴리오 웹사이트",
+  title: siteTitle,
+  description: siteDescription,
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
+    siteName: siteTitle,
+    images: [
+      {
+        url: `${siteUrl}/og-image.png`, // public 폴더의 og-image.png
+        width: 1200,
+        height: 630,
+        alt: siteTitle,
+      },
+    ],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+    images: [`${siteUrl}/og-image.png`],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,12 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          {/* Header 컴포넌트 제거 (page.tsx로 이동) */}
-          
           <AppLayout>
             {children}
           </AppLayout>
-          
         </ThemeProvider>
         <Analytics />
       </body>
