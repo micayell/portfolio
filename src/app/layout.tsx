@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteTitle = "CJ's Interactive Portfolio";
-const siteDescription = "3D와 AI 챗봇으로 구현한 인터랙티브 포트폴리오입니다.";
+const siteTitle = "CJ's Portfolio";
+const siteDescription = "제 포트폴리오 사이트입니다.";
 const siteUrl = "https://gukkaebi-portfolio.vercel.app/"; // 실제 배포된 URL로 변경해주세요.
 
 export const metadata: Metadata = {
