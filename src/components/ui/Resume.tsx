@@ -110,33 +110,37 @@ export default function Resume({ data }: ResumeProps) {
   ];
 
   return (
-    <section id="resume" className="py-20 max-w-4xl mx-auto px-6">
-      <div className="mb-16 text-center">
-        <h2 className="text-3xl md:text-4xl font-light mb-6">History of CJ</h2>
-        <p className="text-gray-500 dark:text-gray-400 font-light">
+    <section id="resume" className="py-12 md:py-20 max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="mb-12 md:mb-16 text-center">
+        <h2 className="text-3xl md:text-4xl font-light mb-4 md:mb-6">History of CJ</h2>
+        <p className="text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
           끊임없이 성장해온 저의 발자취를 소개합니다.
         </p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap justify-center gap-3 mb-20 sticky top-24 z-10 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-all">
-        {categories.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => setFilter(cat.key)}
-            className={`px-5 py-2 rounded-full text-sm transition-all border cursor-pointer ${
-              filter === cat.key
-                ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-md"
-                : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 dark:bg-black dark:text-gray-400 dark:border-zinc-800 dark:hover:border-zinc-600"
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+      <div className="mb-12 md:mb-20 sticky top-16 md:top-24 z-10 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-all -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex justify-center">
+          <div className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => setFilter(cat.key)}
+                className={`px-5 py-2 rounded-full text-sm transition-all border cursor-pointer shrink-0 ${
+                  filter === cat.key
+                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-md"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 dark:bg-black dark:text-gray-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Timeline (Central Spine Style) */}
-      <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent dark:before:via-zinc-700">
+      <div className="relative space-y-8 before:absolute before:inset-0 before:ml-4 sm:before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent dark:before:via-zinc-700">
         <AnimatePresence mode="popLayout">
           {filteredItems.map((item, index) => (
             <motion.div
@@ -149,9 +153,9 @@ export default function Resume({ data }: ResumeProps) {
               className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group"
             >
               {/* Central Node (Icon) */}
-              <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-200 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 dark:border-black dark:bg-zinc-800 dark:text-zinc-400">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-4 border-white bg-gray-200 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 dark:border-black dark:bg-zinc-800 dark:text-zinc-400">
                 <div
-                  className={`w-3 h-3 rounded-full transition-colors ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${
                     item.category === "experience" || item.category === "workExperience"
                       ? "bg-blue-500"
                       : "bg-gray-400 dark:bg-gray-500"
@@ -160,14 +164,14 @@ export default function Resume({ data }: ResumeProps) {
               </div>
 
               {/* Content Card */}
-              <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
+              <div className="w-[calc(100%-3rem)] sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 md:p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
                 
                 {/* Header: Title & Date */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-1">
-                  <h3 className="font-bold text-lg text-black dark:text-white">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                  <h3 className="font-bold text-base md:text-lg text-black dark:text-white">
                     {item.title}
                   </h3>
-                  <time className="text-xs font-medium text-blue-500 whitespace-nowrap bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
+                  <time className="text-xs font-medium text-blue-500 whitespace-nowrap bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded self-start sm:self-auto">
                     {item.date}
                   </time>
                 </div>
@@ -201,9 +205,8 @@ export default function Resume({ data }: ResumeProps) {
                       <li 
                         key={i} 
                         className="flex items-start gap-2 leading-relaxed"
-                        style={{ paddingLeft: `${d.depth * 16}px` }} // depth에 따른 들여쓰기 적용
+                        style={{ paddingLeft: `${d.depth * 12}px` }} // depth에 따른 들여쓰기 조정
                       >
-                        {/* depth에 따라 불렛 모양 변경 가능 (선택 사항) */}
                         <span className={`mt-1.5 w-1 h-1 rounded-full shrink-0 ${
                             d.depth === 0 ? "bg-gray-400 dark:bg-zinc-500" : "bg-gray-300 dark:bg-zinc-600 border border-gray-400 dark:border-zinc-500 bg-transparent"
                         }`} />

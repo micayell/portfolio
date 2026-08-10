@@ -11,14 +11,14 @@ export default function ProjectCard({ id, title, description, tags, thumbnailUrl
     <div className="group relative block border rounded-lg overflow-hidden hover:shadow-lg transition dark:border-gray-700 bg-white dark:bg-zinc-900">
       <Link href={`/projects/${id}`} className="absolute inset-0 z-0" />
       
-      <div className="relative w-full h-48 bg-gray-100 dark:bg-zinc-800">
+      <div className="relative w-full h-40 sm:h-48 bg-gray-100 dark:bg-zinc-800">
         {thumbnailUrl ? (
           <Image
             src={getImagePath(thumbnailUrl)}
             alt={title}
             fill
             className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">
@@ -33,50 +33,47 @@ export default function ProjectCard({ id, title, description, tags, thumbnailUrl
         )}
       </div>
 
-      <div className="p-5 relative z-10 pointer-events-none">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">
+      <div className="p-4 sm:p-5 relative z-10 pointer-events-none">
+        <div className="flex justify-between items-start mb-2 gap-2">
+          <h3 className="text-lg sm:text-xl font-bold group-hover:text-blue-600 transition-colors">
             {title}
           </h3>
           
-          {/* 👇 버튼 그룹 (피그마 + 깃허브) */}
-          <div className="flex gap-1">
-            {/* Figma Link */}
+          <div className="flex gap-1 shrink-0">
             {figmaUrl && (
               <a 
                 href={figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pointer-events-auto p-1 text-gray-400 hover:text-[#F24E1E] transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
+                className="pointer-events-auto p-1.5 text-gray-400 hover:text-[#F24E1E] transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
                 onClick={(e) => e.stopPropagation()}
                 title="Figma Design"
               >
-                <FaFigma className="w-5 h-5" />
+                <FaFigma className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             )}
 
-            {/* GitHub Link */}
             {githubUrl && (
               <a 
                 href={githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pointer-events-auto p-1 text-gray-400 hover:text-black dark:hover:text-white transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
+                className="pointer-events-auto p-1.5 text-gray-400 hover:text-black dark:hover:text-white transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
                 onClick={(e) => e.stopPropagation()}
                 title="GitHub"
               >
-                <FaGithub className="w-5 h-5" />
+                <FaGithub className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             )}
           </div>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 text-sm">
+        <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 text-xs sm:text-sm">
           {description}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {tags.map(tag => (
-            <span key={tag} className="bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded text-xs text-gray-600 dark:text-gray-300">
+            <span key={tag} className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
               {tag}
             </span>
           ))}
