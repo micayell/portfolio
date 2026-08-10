@@ -18,19 +18,19 @@ const geistMono = Geist_Mono({
 
 const siteTitle = "CJ's Portfolio";
 const siteDescription = "제 포트폴리오 사이트입니다.";
-const siteUrl = "https://gukkaebi-portfolio.vercel.app/"; // 실제 배포된 URL로 변경해주세요.
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gukkaebi-portfolio.vercel.app"),
   title: siteTitle,
   description: siteDescription,
   openGraph: {
     title: siteTitle,
     description: siteDescription,
-    url: siteUrl,
+    url: '/',
     siteName: siteTitle,
     images: [
       {
-        url: `${siteUrl}/og-image.png`, // public 폴더의 og-image.png
+        url: '/og-image.png', // 상대 경로로 변경
         width: 1200,
         height: 630,
         alt: siteTitle,
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteTitle,
     description: siteDescription,
-    images: [`${siteUrl}/og-image.png`],
+    images: ['/og-image.png'], // 상대 경로로 변경
   },
 };
 
