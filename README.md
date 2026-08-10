@@ -1,123 +1,112 @@
-# 포트폴리오 웹사이트
+# Interactive Portfolio (Next.js, Three.js, Notion CMS)
 
-인터랙티브 3D 갤러리와 AI 어시스턴트가 결합된 모던한 포트폴리오 웹사이트입니다.
+<div align="center">
+  <p>
+    <strong><a href="[https://your-portfolio-url.com](https://gukkaebi-portfolio-e9xl83hmf-gukkaebi.vercel.app/)" target="_blank">Live Demo</a></strong>
+  </p>
+</div>
 
-## 🚀 기술 스택
+<br/>
 
-### 프론트엔드
-- **Next.js 16** - React 기반 풀스택 프레임워크 (App Router)
-- **React 19** - 최신 React 버전
-- **TypeScript** - 타입 안전성 확보
+이 프로젝트는 Next.js 기반으로 제작된 인터랙티브 포트폴리오 웹사이트입니다. 정적인 정보 제공을 넘어, `react-three-fiber`를 활용한 3D 프로젝트 갤러리와 Notion API를 연동한 AI 챗봇을 통해 사용자 상호작용을 강화하는 데 중점을 두었습니다. 모든 프로젝트 데이터와 이력서는 Notion 데이터베이스를 통해 동적으로 관리됩니다.
 
-### 3D 그래픽
-- **Three.js** - WebGL 기반 3D 라이브러리
-- **@react-three/fiber** - React용 Three.js 렌더러
-- **@react-three/drei** - 유용한 Three.js 헬퍼 컴포넌트
-- **@react-three/postprocessing** - 포스트 프로세싱 효과 (Bloom, SSAO 등)
-- **maath** - 3D 수학 유틸리티
+---
 
-### UI/UX
-- **Tailwind CSS 4** - 유틸리티 퍼스트 CSS 프레임워크
-- **Framer Motion** - 강력한 애니메이션 라이브러리
-- **Lucide React** - 아이콘 라이브러리
-- **React Icons** - 브랜드 아이콘 (GitHub, LinkedIn 등)
-- **Embla Carousel** - 터치 친화적 캐러셀
-- **Next Themes** - 다크 모드 지원
+## 주요 기능
 
-### 데이터 & AI
-- **Notion API** - 이력서, 프로젝트, 스킬 데이터 관리
-- **Groq SDK** - 고성능 AI 추론 (LLM)
-- **dotenv** - 환경 변수 관리
+-   **인터랙티브 3D 갤러리**: `react-three-fiber`와 `drei`를 사용하여 프로젝트를 3D 공간에 전시하고, 사용자가 직접 탐색하며 둘러볼 수 있는 환경을 제공합니다.
+-   **AI 챗봇 어시스턴트**: 포트폴리오에 대한 정보를 대화형으로 제공하는 AI 챗봇을 구현했습니다. Next.js API Route와 Vercel AI SDK를 활용했습니다.
+-   **Notion 기반 Headless CMS**: 프로젝트, 이력서, 기술 스택 등 웹사이트의 모든 콘텐츠를 Notion 데이터베이스에서 관리합니다. 이를 통해 코드 수정 없이 실시간으로 콘텐츠 업데이트가 가능합니다.
+-   **반응형 디자인**: 데스크톱부터 모바일 기기까지 모든 화면 크기에서 최적의 사용자 경험을 제공하도록 설계되었습니다.
+-   **테마 전환**: 사용자의 시스템 설정에 따라 다크/라이트 모드를 자동으로 적용하며, 수동 전환도 지원합니다.
+-   **동적 애니메이션**: `framer-motion`을 활용하여 페이지 전환과 컴포넌트 표시에 부드럽고 직관적인 애니메이션을 적용했습니다.
 
-## 💡 주요 기능 및 문제 해결
+---
 
-### 1. 3D 인터랙티브 갤러리
-**문제:** 일반적인 포트폴리오의 정적인 프로젝트 목록은 사용자의 관심을 끌기 어렵습니다.
+## 기술 스택
 
-**해결:** Three.js와 React Three Fiber를 활용하여 3D 공간에서 프로젝트를 탐색할 수 있는 인터랙티브 갤러리를 구현했습니다. 사용자는 마우스 드래그로 갤러리를 회전하고, 프로젝트를 클릭하여 상세 정보를 확인할 수 있습니다. 포스트 프로세싱 효과를 적용하여 시각적 품질을 높였습니다.
+| Category      | Technologies                                                                                             |
+| :------------ | :------------------------------------------------------------------------------------------------------- |
+| **Frontend**  | `Next.js`, `React`, `TypeScript`, `Tailwind CSS`                                                         |
+| **3D**        | `Three.js`, `React Three Fiber`, `Drei`, `Maath`                                                         |
+| **Animation** | `Framer Motion`, `@use-gesture/react`                                                                    |
+| **Backend**   | `Next.js API Routes`, `Vercel AI SDK`                                                                    |
+| **CMS**       | `Notion API`                                                                                             |
+| **Deployment**| `Vercel`                                                                                                 |
+| **Analytics** | `@vercel/analytics`                                                                                      |
 
-### 2. Notion과의 데이터 통합
-**문제:** 포트폴리오 데이터를 업데이트할 때마다 코드를 수정하고 다시 배포해야 하는 번거로움이 있습니다.
+---
 
-**해결:** Notion을 CMS(Content Management System)로 활용하여 이력서, 프로젝트, 스킬 데이터를 동적으로 가져옵니다. Notion에서 데이터를 수정하면 자동으로 웹사이트에 반영되므로, 개발 지식 없이도 쉽 게 포트폴리오를 관리할 수 있습니다.
+## 핵심 구현 및 문제 해결
 
-### 3. AI 기반 포트폴리오 어시스턴트
-**문제:** 방문자가 원하는 정보를 빠르게 찾기 어렵고, 질문에 대한 답변을 제공할 수 없습니다.
+개발 과정에서 마주한 주요 문제들과 이를 해결하기 위해 적용한 기술적인 접근 방식입니다.
 
-**해결:** Groq SDK를 활용하여 AI 어시스턴트를 구현했습니다. 사용자의 질문에 실시간으로 답변하고, 관련 섹션으로 네비게이션을 제안합니다. 이로 인해 사용자 경험이 크게 개선되었습니다.
+### 1. Notion을 Headless CMS로 활용한 동적 콘텐츠 관리
 
-### 4. Vercel을 통한 안전한 배포
-**문제:** API 키 노출 위험으로 인해 정적 사이트 배포에 제약이 있습니다.
+**문제 인식:** 포트폴리오 콘텐츠(프로젝트, 이력 등)를 업데이트할 때마다 코드를 수정하고 다시 배포하는 과정의 비효율성을 개선하고자 했습니다.
 
-**해결:** Vercel을 사용하여 서버리스 환경에서 API 라우트를 안전하게 실행합니다. 환경 변수는 서버 측에서만 접근 가능하므로 API 키 노출 위험이 없습니다.
+**해결 방안:** Notion을 Headless CMS로 도입하여 콘텐츠와 코드를 분리했습니다.
 
-### 5. 타입 안전성 확보
-**문제:** JavaScript로 작성된 프로젝트는 런타임 에러가 발생하기 쉽습니다.
+-   **Notion API 연동**: `src/lib/notion.ts`에 Notion API와 통신하는 로직을 모듈화하여 재사용성을 높였습니다. Notion 데이터베이스 ID와 API 키만으로 콘텐츠를 가져올 수 있도록 설계했습니다.
+-   **데이터 파서 구현**: Notion API가 반환하는 복잡한 Block 구조의 데이터를 프론트엔드에서 사용하기 쉬운 JSON 형태로 변환하는 파서를 직접 구현했습니다. 특히, 중첩된 블록(들여쓰기, 컬럼 등)을 재귀적으로 탐색하여 원본 문서의 계층 구조를 유지했습니다.
+-   **성능 최적화 (SSG)**: `getStaticProps` (App Router의 `generateStaticParams`)를 활용하여 빌드 시점에 Notion 데이터를 가져와 정적 페이지로 생성했습니다. 이를 통해 빠른 페이지 로딩 속도(FCP)와 우수한 SEO 점수를 확보했습니다.
 
-**해결:** 전체 프로젝트를 TypeScript로 마이그레이션하여 컴파일 타임에 타입 에러를 잡아냅니다. 특히 채팅 메시지, 액션 객체 등에 명확한 인터페이스를 정의하여 안정성을 높였습니다.
+**결과:** 외부 API를 활용한 서비스 통합 능력, 복잡한 데이터를 목적에 맞게 가공하는 능력, 그리고 웹 성능 최적화(SSG)에 대한 깊은 이해를 증명할 수 있었습니다.
 
-## 📦 설치 및 실행
+### 2. `react-three-fiber`를 이용한 인터랙티브 3D 갤러리
 
-```bash
-# 의존성 설치
-npm install
+**문제 인식:** 일반적인 2D 그리드 레이아웃은 사용자의 흥미를 유발하기에 한계가 있다고 판단하여, 더 몰입감 있는 경험을 제공하고자 했습니다.
 
-# 환경 변수 설정 (.env.local)
-NOTION_API_KEY=your_notion_api_key
-NOTION_DATABASE_ID=your_database_id
-NOTION_PORTFOLIO_PAGE_ID=your_page_id
-GROQ_API_KEY=your_groq_api_key
+**해결 방안:** `react-three-fiber`를 사용하여 3D 갤러리 공간을 구현했습니다.
 
-# 개발 서버 실행
-npm run dev
+-   **동적 객체 생성**: Notion에서 가져온 프로젝트 데이터를 기반으로 3D 공간에 액자(`Frame`)와 캡션을 동적으로 생성했습니다. 이미지 원본 비율에 따라 액자 크기가 자동으로 조절되도록 로직을 구현했습니다.
+-   **반응형 3D 캔버스**: 모바일과 데스크톱 환경 모두에서 최적의 경험을 제공하기 위해 `useThree` 훅으로 뷰포트 너비를 감지했습니다. 모바일에서는 객체의 `scale`과 객체 간의 `gap`을 동적으로 줄여 화면에 맞게 렌더링했습니다.
+-   **모바일 터치 인터랙션**: `react-use-gesture` 라이브러리를 도입하여, 모바일 사용자가 터치 드래그(스와이프)를 통해 직관적으로 갤러리를 탐색할 수 있도록 UX를 개선했습니다.
 
-# 프로덕션 빌드
-npm run build
-```
+**결과:** Three.js와 같은 복잡한 라이브러리를 학습하고 실제 프로젝트에 적용하는 능력, 3D 공간에서의 사용자 인터랙션 및 반응형 디자인 구현 능력, 그리고 성능을 고려한 3D 렌더링 최적화 경험을 쌓았습니다.
 
-## 🚀 Vercel 배포
+### 3. AI 챗봇 어시스턴트 구현
 
-이 프로젝트는 Vercel에 배포되도록 설계되었습니다.
+**문제 인식:** 사용자가 포트폴리오에 대해 궁금한 점이 생겼을 때, 수동적으로 정보를 찾는 대신 즉각적인 답변을 얻을 수 있는 창구가 필요하다고 판단했습니다.
 
-### 배포 방법
+**해결 방안:** Vercel AI SDK와 Next.js API Route를 활용하여 AI 챗봇을 구현했습니다.
 
-1. **Vercel 프로젝트 생성**
-   ```bash
-   npx vercel
-   ```
+-   **서버리스 백엔드**: Next.js의 API Route를 사용하여 별도의 서버 없이 백엔드 로직을 구현했습니다. 사용자의 질문, 대화 기록, Notion에서 가져온 프로젝트/이력서 데이터를 함께 AI 모델에 전달하여 컨텍스트에 맞는 답변을 생성하도록 했습니다.
+-   **스트리밍 응답**: Vercel AI SDK의 `StreamingTextResponse`를 사용하여, AI가 생성하는 답변을 실시간 스트리밍 형태로 프론트엔드에 전송했습니다. 이를 통해 사용자는 실제 대화처럼 즉각적인 피드백을 받을 수 있어 UX가 크게 향상되었습니다.
+-   **제안 액션(Suggested Action)**: AI가 답변과 함께 특정 페이지로 이동을 제안하는 '액션'을 반환할 수 있도록 설계했습니다. 예를 들어, "프로젝트 보여줘"라는 질문에 프로젝트 갤러리로 바로 이동하는 버튼을 제공하여 사용자의 다음 행동을 유도했습니다.
 
-2. **환경 변수 설정**
-   Vercel 대시보드에서 다음 환경 변수를 추가하세요:
-   - `NOTION_API_KEY`
-   - `NOTION_DATABASE_ID`
-   - `NOTION_PORTFOLIO_PAGE_ID`
-   - `GROQ_API_KEY`
+**결과:** 서버리스 아키텍처(API Routes)에 대한 이해 및 활용 능력, AI SDK를 활용한 LLM 기반 서비스 개발 경험, 그리고 사용자 경험을 고려한 비동기 데이터 처리 및 인터페이스 설계 능력을 갖추게 되었습니다.
 
-3. **자동 배포**
-   Git 리포지토리를 Vercel에 연결하면, `main` 브랜치에 푸시할 때마다 자동으로 배포됩니다.
+---
 
-## 📂 프로젝트 구조
+## 시작하기
 
-```
-src/
-├── app/              # Next.js App Router
-│   ├── api/         # API 라우트 (채팅, 데이터 fetching)
-│   └── projects/    # 프로젝트 상세 페이지
-├── components/      # React 컴포넌트
-│   ├── canvas/      # 3D 씬 컴포넌트
-│   └── ui/          # UI 컴포넌트
-├── config/          # 설정 파일
-├── data/            # 정적 데이터
-├── hooks/           # 커스텀 훅
-├── lib/             # 유틸리티 함수
-└── types/           # TypeScript 타입 정의
-```
+1.  **저장소 복제**
+    ```bash
+    git clone https://github.com/your-username/your-repo-name.git
+    cd your-repo-name
+    ```
 
-## 🎨 주요 컴포넌트
+2.  **종속성 설치**
+    ```bash
+    npm install
+    ```
 
-- **GalleryScene** - 3D 프로젝트 갤러리
-- **ChatInterface** - AI 어시스턴트 채팅 인터페이스
-- **About** - 프로필 및 소개 섹션
-- **Resume** - Notion에서 가져온 이력서
-- **Skills** - 기술 스킬 목록
-- **ProjectModal** - 프로젝트 상세 모달
+3.  **환경 변수 설정**
+    `.env.local` 파일을 생성하고 아래 내용을 작성합니다.
+    ```env
+    # Notion
+    NOTION_API_KEY=
+    NOTION_DATABASE_ID=
+    NOTION_PORTFOLIO_PAGE_ID=
+
+    # OpenAI (Optional)
+    OPENAI_API_KEY=
+    ```
+
+4.  **개발 서버 실행**
+    ```bash
+    npm run dev
+    ```
+
+    브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.

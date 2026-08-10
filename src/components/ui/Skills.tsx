@@ -1,27 +1,29 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDrag } from "@use-gesture/react";
 
 interface SkillsProps {
   skills: Record<string, string[]>;
 }
 
 export default function Skills({ skills }: SkillsProps) {
-  // 1. 카테고리 목록 생성 (All + 동적 카테고리)
-  const categories = useMemo(() => {
-    const cats = Object.keys(skills);
-    return ["All", ...cats];
-  }, [skills]);
-
+  const categories = useMemo(() => ["All", ...Object.keys(skills)], [skills]);
   const [activeTab, setActiveTab] = useState("All");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 2. 필터링된 스킬 데이터
   const filteredSkills = useMemo(() => {
     if (activeTab === "All") return skills;
-    // 선택된 카테고리만 반환하는 객체 생성
     return { [activeTab]: skills[activeTab] };
   }, [activeTab, skills]);
+
+  const bind = useDrag(({ down, movement: [mx], memo = scrollContainerRef.current?.scrollLeft }) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = memo - mx;
+    }
+    return memo;
+  }, { axis: 'x' });
 
   return (
     <section id="skills" className="py-12 md:py-20 max-w-5xl mx-auto px-4 sm:px-6">
@@ -32,10 +34,14 @@ export default function Skills({ skills }: SkillsProps) {
         </p>
       </div>
 
-      {/* 1. 카테고리 탭 */}
       <div className="mb-12 md:mb-12 sticky top-16 md:top-24 z-10 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-all -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex justify-center">
-          <div className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2">
+          <div
+            {...bind()}
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2 cursor-grab active:cursor-grabbing"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -53,7 +59,6 @@ export default function Skills({ skills }: SkillsProps) {
         </div>
       </div>
 
-      {/* 2. 스킬 카드 그리드 */}
       <motion.div 
         layout
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { NAV_ITEMS } from "@/constants/nav";
 import { Menu, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface HeaderProps {
   activeTab: string;
@@ -18,8 +19,21 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
     setIsMenuOpen(false); // 메뉴 항목 클릭 시 모바일 메뉴 닫기
   };
 
+  // 메뉴가 열렸을 때 body 스크롤 방지
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    // 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMenuOpen]);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-sm transition-colors border-b border-gray-100 dark:border-zinc-900">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm transition-colors border-b border-gray-100 dark:border-zinc-900">
       <nav className="max-w-screen-2xl mx-auto px-6 h-16 flex items-center justify-between">
         <button
           onClick={() => handleTabChange('about')}
@@ -49,34 +63,43 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-16 bg-white dark:bg-black z-40 p-6">
-          <ul className="flex flex-col items-center justify-center h-full space-y-8 text-lg uppercase tracking-widest text-gray-500 dark:text-gray-400">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleTabChange(item.id)}
-                  className={`hover:text-black dark:hover:text-white transition-colors cursor-pointer ${
-                    activeTab === item.id ? "text-black dark:text-white font-bold" : ""
-                  }`}
-                >
-                  {item.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
-            <ThemeToggle />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-white/95 dark:bg-black/95 backdrop-blur-md z-40"
+          >
+            <div className="flex flex-col items-center justify-center h-full">
+              <ul className="flex flex-col items-center space-y-8 text-lg uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                {NAV_ITEMS.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => handleTabChange(item.id)}
+                      className={`hover:text-black dark:hover:text-white transition-colors cursor-pointer ${
+                        activeTab === item.id ? "text-black dark:text-white font-bold" : ""
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="absolute bottom-16">
+                <ThemeToggle />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
