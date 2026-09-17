@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { ParsedResume, DescriptionItem } from "@/lib/notion";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
 
 interface ResumeProps {
   data: ParsedResume;
+  initialFilter?: Category;
 }
 
-type Category = "all" | "experience" | "workExperience" | "education" | "award" | "certificate";
+export type Category = "all" | "experience" | "workExperience" | "education" | "award" | "certificate";
 
 interface TimelineItem {
   id: string;
@@ -21,8 +22,9 @@ interface TimelineItem {
   desc?: DescriptionItem[];
 }
 
-export default function Resume({ data }: ResumeProps) {
-  const [filter, setFilter] = useState<Category>("all");
+export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
+  const [filter, setFilter] = useState<Category>(initialFilter);
+  useEffect(() => { setFilter(initialFilter); }, [initialFilter]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const timelineItems = useMemo(() => {
@@ -49,7 +51,7 @@ export default function Resume({ data }: ResumeProps) {
     { key: "experience", label: "Experience" },
   ];
 
-  const bind = useDrag(({ down, movement: [mx], memo = scrollContainerRef.current?.scrollLeft }) => {
+  const bind = useDrag(({ movement: [mx], memo = scrollContainerRef.current?.scrollLeft }) => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft = memo - mx;
     }
@@ -71,7 +73,7 @@ export default function Resume({ data }: ResumeProps) {
             {...bind()}
             ref={scrollContainerRef}
             className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2 cursor-grab active:cursor-grabbing"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', touchAction: 'pan-y' }}
           >
             {categories.map((cat) => (
               <button

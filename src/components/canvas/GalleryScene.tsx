@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Image, Text, Environment, RoundedBox } from "@react-three/drei";
 import { useDrag } from "@use-gesture/react";
 import { Project } from "@/types/project";
 import { easing } from "maath";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import * as THREE from "three";
 import { TextureLoader } from "three";
 
 interface GallerySceneProps {
@@ -75,8 +76,10 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
   );
 }
 
-function Scene({ projects, currentIndex, setIndex, setAutoPlay, onSelectProject, handlePrev, handleNext }: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Scene({ projects, currentIndex, setAutoPlay, onSelectProject, handlePrev, handleNext }: any) {
   const { viewport } = useThree();
+  const lightGroupRef = useRef<THREE.Group>(null);
   const isMobile = viewport.width < 4; // 모바일 뷰포트 기준
   const gap = isMobile ? GAP * 0.6 : GAP;
 
@@ -97,12 +100,17 @@ function Scene({ projects, currentIndex, setIndex, setAutoPlay, onSelectProject,
   useFrame((state, delta) => {
     const targetX = currentIndex * gap;
     easing.damp3(state.camera.position, [targetX, 0, 6.5], 0.4, delta);
+    if (lightGroupRef.current) {
+      easing.damp(lightGroupRef.current.position, 'x', targetX, 0.4, delta);
+    }
     state.camera.lookAt(targetX, 0, 0);
   });
 
   return (
     <group {...bind()}>
       <ambientLight intensity={0.4} />
+      <group ref={lightGroupRef}>
+        </group>
       <mesh position={[currentIndex * gap, 0, -0.5]} receiveShadow>
         <planeGeometry args={[100, 20]} />
         <meshStandardMaterial color="#e8e8e8" roughness={0.5} />
@@ -159,10 +167,10 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
 
   return (
     <group position={position}>
-      <spotLight position={[0, 4, 3]} angle={0.6} penumbra={0.5} intensity={2.5} castShadow shadow-bias={-0.0001} />
       <RoundedBox args={[frameWidth, frameHeight, frameThickness]} radius={0.05} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#2a3439" roughness={0.2} metalness={0.8} />
       </RoundedBox>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <Image
         url={project.thumbnailUrl || ""}
         scale={[contentWidth, contentHeight]}

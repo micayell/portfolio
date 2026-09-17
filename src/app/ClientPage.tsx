@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import Header from "@/components/ui/Header";
 import About from "@/components/ui/About";
-import Resume from "@/components/ui/Resume";
+import Resume, { Category } from "@/components/ui/Resume";
 import Skills from "@/components/ui/Skills";
 import Intro from "@/components/ui/Intro";
 import GalleryScene from "@/components/canvas/GalleryScene";
@@ -38,6 +38,7 @@ interface ClientPageProps {
 export default function ClientPage({ initialProjects, resumeData }: ClientPageProps) {
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
+  const [resumeFilter, setResumeFilter] = useState<Category>("all");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [initialChatMessages, setInitialChatMessages] = useState<Message[]>([]);
@@ -65,10 +66,16 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
   const handleActionClick = (action: SuggestedAction) => {
     if (action.type === "navigate" && action.target) {
-      const target = action.target;
+      let target = action.target;
       setShowChatModal(false);
+      
+      if (target === "workExperience" || target === "experience") {
+        setResumeFilter(target as Category);
+        target = "resume";
+      }
+      
       setActiveTab(target);
-      // 해당 섹션으로 스크롤
+      
       setTimeout(() => {
         const element = document.getElementById(target);
         if (element) {
@@ -101,7 +108,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "resume" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <Resume data={resumeData} />
+              <Resume data={resumeData} initialFilter={resumeFilter} />
             </div>
           )}
 

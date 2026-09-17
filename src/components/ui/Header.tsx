@@ -4,7 +4,6 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { NAV_ITEMS } from "@/constants/nav";
 import { Menu, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 

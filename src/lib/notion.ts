@@ -149,7 +149,7 @@ export async function getProject(slug: string): Promise<Project | null> {
     const response: any = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID!,
       filter: {
-        property: "ID", // ⚠️ 노션 DB에 'ID'라는 텍스트 속성을 만들고, URL값(예: platepay)을 넣어주세요!
+        property: "ID",
         rich_text: {
           equals: slug,
         },
@@ -169,48 +169,67 @@ export async function getProject(slug: string): Promise<Project | null> {
 // - column_list와 column을 재귀적으로 순회하며 내부 블록을 평탄화하여 반환 (isFlatten=true)
 export async function getPageContent(blockId: string, projectId: string = "", isFlatten: boolean = true): Promise<any[]> {
   try {
-    const response = await notion.blocks.children.list({
-      block_id: blockId,
-    });
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    let response;
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        response = await notion.blocks.children.list({ block_id: blockId });
+        break;
+      } catch (error: any) {
+        if (error.code === 'rate_limited' || error.status === 429) {
+          retries--;
+          console.warn(`[Notion API] Rate limited. Retrying... (${retries} retries left)`);
+          await sleep(1500); // wait 1.5 seconds before retrying
+        } else {
+          throw error;
+        }
+      }
+    }
+    
+    if (!response) {
+       throw new Error("Failed to fetch blocks after retries due to rate limit.");
+    }
     
     const blocks = response.results;
 
-    const processedBlocks = await Promise.all(
-      blocks.map(async (block: any) => {
-        // 이미지 URL을 그대로 사용 (다운로드 제거)
-
+        const processedBlocks = [];
+    for (const obj of blocks) { const block = obj as any;
         // [컬럼 레이아웃 처리] column_list -> column -> children
         if (block.type === 'column_list') {
-            // column_list 내부의 column들을 가져오고, 그 내부의 블록들을 가져옴
             const columns = await getPageContent(block.id, projectId, isFlatten);
-            
             if (isFlatten) {
-              return columns; // 배열의 배열 형태가 됨 (나중에 flat 처리)
+              processedBlocks.push(columns);
+              continue;
             } else {
               block.children = columns;
-              return block;
+              processedBlocks.push(block);
+              continue;
             }
         }
 
         if (block.type === 'column') {
              const children = await getPageContent(block.id, projectId, isFlatten);
-             
              if (isFlatten) {
-               return children;
+               processedBlocks.push(children);
+               continue;
              } else {
                block.children = children;
-               return block;
+               processedBlocks.push(block);
+               continue;
              }
         }
 
         // [일반 하위 블록 처리] (들여쓰기 내용 가져오기)
         if (block.has_children && block.type !== 'column_list' && block.type !== 'column') {
+          // Add a small delay to respect Notion's 3 req/sec limit deeply nested
+          await new Promise(resolve => setTimeout(resolve, 350));
           (block as any).children = await getPageContent(block.id, projectId, isFlatten);
         }
 
-        return block;
-      })
-    );
+        processedBlocks.push(block);
+    }
 
     // 중첩된 배열 평탄화 (column_list/column 처리 결과가 배열로 들어오므로)
     if (isFlatten) {
@@ -275,7 +294,7 @@ export async function getResumeData(): Promise<ParsedResume> {
     };
 
     let currentSection = "";
-    let currentCategory = "General"; // Experience 내부 카테고리
+    let currentCategory = ""; // Experience 내부 카테고리
     let currentSkillCategory = ""; // Skills 내부 카테고리
     const sectionMapping = NOTION_FIELD_MAPPING.resume;
 
@@ -304,12 +323,12 @@ export async function getResumeData(): Promise<ParsedResume> {
         }
         else if (sectionMapping.experience.some((s) => lowerText.includes(s.toLowerCase()))) {
           currentSection = "experience";
-          currentCategory = "General";
+          currentCategory = "";
           currentSkillCategory = "";
         }
         else if (sectionMapping.workExperience.some((s) => lowerText.includes(s.toLowerCase()))) {
           currentSection = "workExperience";
-          currentCategory = "General";
+          // currentCategory = "경력";
           currentSkillCategory = "";
         }
         else if (sectionMapping.skills.some((s) => lowerText.includes(s.toLowerCase()))) {
@@ -375,7 +394,7 @@ export async function getResumeData(): Promise<ParsedResume> {
             const title = text.replace(period, "").trim();
             let desc: DescriptionItem[] = [];
             if ((block as any).children) desc = collectDesc((block as any).children, 0);
-            data.experience.push({ category: "General", title, period, desc });
+            data.experience.push({ category: currentCategory, title, period, desc });
           }
           else {
             const children = (block as any).children || [];
@@ -432,7 +451,7 @@ export async function getResumeData(): Promise<ParsedResume> {
             const title = text.replace(period, "").trim();
             let desc: DescriptionItem[] = [];
             if ((block as any).children) desc = collectDesc((block as any).children, 0);
-            data.workExperience.push({ category: "General", title, period, desc });
+            data.workExperience.push({ category: "경력", title, period, desc });
           }
           else {
             const children = (block as any).children || [];
@@ -455,7 +474,7 @@ export async function getResumeData(): Promise<ParsedResume> {
                    const t = childText.replace(p, "").trim();
                    let d: DescriptionItem[] = [];
                    if (child.children) d = collectDesc(child.children, 0);
-                   data.workExperience.push({ category: currentCategory, title: t, period: p, desc: d });
+                   data.workExperience.push({ category: "경력", title: t, period: p, desc: d });
                  }
                }
             } else {
@@ -511,14 +530,14 @@ export async function getResumeData(): Promise<ParsedResume> {
             const match = content.match(/^\[(.*?)]\s*([\s\S]*)/);
             if (match) {
                 const category = match[1].trim();
-                const items = match[2].split(/[,\\n]/).map((s: string) => s.trim()).filter(Boolean);
+                const items = match[2].split(/[,\n]/).map((s: string) => s.trim()).filter(Boolean);
                 if (items.length > 0) data.skills[category] = items;
             }
         }
         // (2) 일반 텍스트 (Paragraph) -> 스킬 목록으로 추가
         else if (type === "paragraph") {
             if (currentSkillCategory && text.trim()) {
-                const items = text.split(/[,\\n]/).map((s: string) => s.trim()).filter(Boolean);
+                const items = text.split(/[,\n]/).map((s: string) => s.trim()).filter(Boolean);
                 if (items.length > 0) {
                     if (!data.skills[currentSkillCategory]) data.skills[currentSkillCategory] = [];
                     data.skills[currentSkillCategory].push(...items);
