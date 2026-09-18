@@ -47,7 +47,7 @@
 
 **해결 방안:** Notion을 Headless CMS로 도입하여 콘텐츠와 코드를 분리했습니다.
 
--   **Notion API 연동**: `src/lib/notion.ts`에 Notion API와 통신하는 로직을 모듈화하여 재사용성을 높였습니다. Notion 데이터베이스 ID와 API 키만으로 콘텐츠를 가져올 수 있도록 설계했습니다.
+-   **Notion API 연동**: `src/features/common/lib/notion.ts`에 Notion API와 통신하는 로직을 모듈화하여 재사용성을 높였습니다. Notion 데이터베이스 ID와 API 키만으로 콘텐츠를 가져올 수 있도록 설계했습니다.
 -   **데이터 파서 구현**: Notion API가 반환하는 복잡한 Block 구조의 데이터를 프론트엔드에서 사용하기 쉬운 JSON 형태로 변환하는 파서를 직접 구현했습니다. 특히, 중첩된 블록(들여쓰기, 컬럼 등)을 재귀적으로 탐색하여 원본 문서의 계층 구조를 유지했습니다.
 -   **성능 최적화 (SSG)**: `getStaticProps` (App Router의 `generateStaticParams`)를 활용하여 빌드 시점에 Notion 데이터를 가져와 정적 페이지로 생성했습니다. 이를 통해 빠른 페이지 로딩 속도(FCP)와 우수한 SEO 점수를 확보했습니다.
 

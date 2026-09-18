@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Project } from "@/types/project";
+import { Project } from "@/features/projects/types/project";
 // lucide-react 대신 react-icons/fa 임포트
 import { FaTimes, FaGithub, FaExternalLinkAlt, FaAward, FaFigma } from "react-icons/fa";
 

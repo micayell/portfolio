@@ -2,7 +2,7 @@
 
 import { X, Mail, BookText, Copy } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import { profile } from "@/data/about";
+import { profile } from "@/features/about/data/about";
 import { useState } from "react";
 
 interface ContactModalProps {

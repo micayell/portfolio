@@ -1,4 +1,4 @@
-import { getProjects, getPageContent, getResumeData } from "@/lib/notion";
+import { getProjects, getPageContent, getResumeData } from "@/features/common/lib/notion";
 import ClientPage from "./ClientPage";
 
 // ISR: 1시간마다 데이터 갱신

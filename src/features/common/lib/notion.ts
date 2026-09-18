@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
-import { Project } from "@/types/project";
-import { NOTION_FIELD_MAPPING, findField, logMissingField } from "@/config/notion-mapping";
+import { Project } from "@/features/projects/types/project";
+import { NOTION_FIELD_MAPPING, findField, logMissingField } from "@/features/common/config/notion-mapping";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

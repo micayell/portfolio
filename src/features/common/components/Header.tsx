@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { NAV_ITEMS } from "@/constants/nav";
+import { ThemeToggle } from "@/features/common/components/ThemeToggle";
+import { NAV_ITEMS } from "@/features/common/constants/nav";
 import { Menu, X } from "lucide-react";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';

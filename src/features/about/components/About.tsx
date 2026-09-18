@@ -1,10 +1,10 @@
-import Image from "next/image";
-import { profile } from "@/data/about"; // 데이터 import
-import { getImagePath } from "@/lib/utils";
+﻿import Image from "next/image";
+import { profile } from "@/features/about/data/about"; // 데이터 import
+import { getImagePath } from "@/features/common/lib/utils";
 import { Mail, BookText } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import ChatInput from "./ChatInput";
-import ContactModal from "./ContactModal";
+import ChatInput from "@/features/chat/components/ChatInput";
+import ContactModal from "@/features/about/components/ContactModal";
 import { useState } from "react";
 
 interface AboutProps {

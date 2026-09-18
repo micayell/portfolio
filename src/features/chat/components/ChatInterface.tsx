@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FaPaperPlane } from "react-icons/fa";
-import ChatMessage from "./ChatMessage";
-import { Project } from "@/types/project";
+import ChatMessage from "@/features/chat/components/ChatMessage";
+import { Project } from "@/features/projects/types/project";
 
 interface Message {
   role: "user" | "assistant";

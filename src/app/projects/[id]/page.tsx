@@ -1,4 +1,4 @@
-import { getProject, getPageContent, getProjects } from "@/lib/notion";
+import { getProject, getPageContent, getProjects } from "@/features/common/lib/notion";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 

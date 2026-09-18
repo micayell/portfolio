@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import AppLayout from "@/components/layout/AppLayout";
+import { ThemeProvider } from "@/features/common/providers/ThemeProvider";
+import AppLayout from "@/features/common/components/AppLayout";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ParsedResume, DescriptionItem } from "@/lib/notion";
+import { ParsedResume, DescriptionItem } from "@/features/common/lib/notion";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
 

@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import Header from "@/components/ui/Header";
-import About from "@/components/ui/About";
-import Resume, { Category } from "@/components/ui/Resume";
-import Skills from "@/components/ui/Skills";
-import Intro from "@/components/ui/Intro";
-import GalleryScene from "@/components/canvas/GalleryScene";
-import ProjectModal from "@/components/ui/ProjectModal";
-import ChatInterface from "@/components/ui/ChatInterface";
-import { Project } from "@/types/project";
-import { ParsedResume } from "@/lib/notion";
+import Header from "@/features/common/components/Header";
+import About from "@/features/about/components/About";
+import Resume, { Category } from "@/features/resume/components/Resume";
+import Skills from "@/features/skills/components/Skills";
+import Intro from "@/features/home/components/Intro";
+import GalleryScene from "@/features/projects/components/GalleryScene";
+import ProjectModal from "@/features/projects/components/ProjectModal";
+import ChatInterface from "@/features/chat/components/ChatInterface";
+import { Project } from "@/features/projects/types/project";
+import { ParsedResume } from "@/features/common/lib/notion";
 
 interface Message {
   role: "user" | "assistant";
