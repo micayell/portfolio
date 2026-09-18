@@ -3,18 +3,14 @@
 Next.js, React Three Fiber, Notion API, 그리고 AI(Groq)를 결합하여 만든 **인터랙티브 3D 포트폴리오**입니다.  
 사용자는 정적인 텍스트를 읽는 대신 3D 공간을 탐색하고, 챗봇과 대화하며, 노션으로 실시간 업데이트되는 이력을 확인할 수 있습니다.
 
-<div align="center">
-  <p>
-    <strong><a href="https://gukkaebi-portfolio.vercel.app/" target="_blank">Live Demo 방문하기</a></strong>
-  </p>
-</div>
+👉 **[Live Demo 방문하기](https://gukkaebi-portfolio.vercel.app/)**
 
 ---
 
 ## 🎯 설계 철학 (Macroscopic View)
 
 이 프로젝트는 단순한 정보 나열을 넘어 **기술적 깊이와 사용자 경험(UX)의 융합**을 목표로 합니다.
-프론트엔드 아키텍처부터 백엔드 데이터 パ이프라인까지, 확장성과 유지보수성을 극대화하는 방향으로 설계되었습니다.
+프론트엔드 아키텍처부터 백엔드 데이터 파이프라인까지, 확장성과 유지보수성을 극대화하는 방향으로 설계되었습니다.
 
 ### 1. Feature-Sliced Design (FSD) 아키텍처 도입
 - 도메인 주도 설계(DDD)에 기반한 **FSD (Feature-Sliced Design)** 구조를 채택하여 컴포넌트와 비즈니스 로직을 `src/features/` 하위에 도메인별(`resume`, `chat`, `projects`, `common` 등)로 완벽히 분리했습니다.
@@ -82,3 +78,4 @@ Next.js, React Three Fiber, Notion API, 그리고 AI(Groq)를 결합하여 만�
    npm run dev
    ```
    브라우저에서 `http://localhost:3000`에 접속하여 프로젝트를 확인할 수 있습니다.
+
