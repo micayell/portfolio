@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { ParsedResume, DescriptionItem } from "@/features/common/lib/notion";
@@ -101,8 +101,8 @@ export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group"
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group w-full"
             >
               <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-4 border-white bg-gray-200 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 dark:border-black dark:bg-zinc-800 dark:text-zinc-400">
                 <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${item.category === "experience" || item.category === "workExperience" ? "bg-blue-500" : "bg-gray-400 dark:bg-gray-500"}`} />
