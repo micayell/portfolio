@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -102,7 +102,7 @@ export default function ClientPage({ initialProjects, resumeData }: ClientPagePr
 
           {activeTab === "about" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <About onSendMessage={handleChatMessage} />
+              <About onSendMessage={handleChatMessage} profileImageUrl={resumeData.profileImageUrl} />
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import { Client } from "@notionhq/client";
+﻿import { Client } from "@notionhq/client";
 import { Project } from "@/features/projects/types/project";
 import { NOTION_FIELD_MAPPING, findField, logMissingField } from "@/features/common/config/notion-mapping";
 
@@ -256,6 +256,7 @@ export interface ParsedResume {
   experience: { category: string; title: string; period: string; desc: DescriptionItem[] }[];
   workExperience: { category: string; title: string; period: string; desc: DescriptionItem[] }[];
   skills: Record<string, string[]>;
+  profileImageUrl?: string;
 }
 
 // 텍스트 추출 헬퍼
@@ -277,6 +278,7 @@ export async function getResumeData(): Promise<ParsedResume> {
       experience: [],
       workExperience: [],
       skills: {},
+      profileImageUrl: "",
     };
   }
 
@@ -291,9 +293,20 @@ export async function getResumeData(): Promise<ParsedResume> {
       experience: [],
       workExperience: [],
       skills: {},
+      profileImageUrl: "",
     };
 
-    let currentSection = "";
+    // 프로필 이미지 추출
+      const imageBlock = blocks.find((b: any) => b.type === "image");
+      if (imageBlock) {
+        if (imageBlock.image?.type === "external") {
+          data.profileImageUrl = imageBlock.image.external.url;
+        } else if (imageBlock.image?.type === "file") {
+          data.profileImageUrl = imageBlock.image.file.url;
+        }
+      }
+
+      let currentSection = "";
     let currentCategory = ""; // Experience 내부 카테고리
     let currentSkillCategory = ""; // Skills 내부 카테고리
     const sectionMapping = NOTION_FIELD_MAPPING.resume;
@@ -625,6 +638,8 @@ export async function getResumeData(): Promise<ParsedResume> {
       experience: [],
       workExperience: [],
       skills: {},
+      profileImageUrl: "",
     };
   }
 }
+

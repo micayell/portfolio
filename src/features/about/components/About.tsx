@@ -9,9 +9,10 @@ import { useState } from "react";
 
 interface AboutProps {
   onSendMessage?: (message: string) => void;
+  profileImageUrl?: string;
 }
 
-export default function About({ onSendMessage }: AboutProps) {
+export default function About({ onSendMessage, profileImageUrl }: AboutProps) {
   const [showContactModal, setShowContactModal] = useState(false);
 
   const quickQuestions = [
@@ -49,7 +50,7 @@ export default function About({ onSendMessage }: AboutProps) {
           <div className="relative w-2/3 max-w-[280px] md:w-full md:max-w-none aspect-[3/4] bg-gray-100 dark:bg-zinc-800 p-3 md:p-4 shadow-sm">
             <div className="relative w-full h-full overflow-hidden">
               <Image
-                src={getImagePath("/images/profile.jpg")}
+                src={profileImageUrl || getImagePath("/images/profile.jpg")}
                 alt={profile.name}
                 fill
                 sizes="(max-width: 768px) 66vw, 33vw"
