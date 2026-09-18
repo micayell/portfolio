@@ -1,14 +1,24 @@
 ﻿"use client";
 
 import { useState, useEffect, Suspense, useRef } from "react";
-import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { Image, Text, Environment, RoundedBox, Box } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Text, Environment, Box } from "@react-three/drei";
 import { useDrag } from "@use-gesture/react";
 import { Project } from "@/features/projects/types/project";
 import { easing } from "maath";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import * as THREE from "three";
-import { TextureLoader } from "three";
+
+// @ts-expect-error: troika-three-text 모듈의 타입 정의 파일 누락 해결
+import { preloadFont } from "troika-three-text";
+
+const fontRegular = "/fonts/NotoSansKR-400.woff";
+const fontBold = "/fonts/NotoSansKR-700.woff";
+
+if (typeof window !== "undefined") {
+  preloadFont({ font: fontRegular }, () => {});
+  preloadFont({ font: fontBold }, () => {});
+}
 
 interface GallerySceneProps {
   projects: Project[];
@@ -16,6 +26,9 @@ interface GallerySceneProps {
 }
 
 const GAP = 10; // 데스크톱 기준 간격
+
+// 드래그 중 R3F 캔버스 내부의 hover 이벤트(커서 포인터)가 덮어씌워지는 것을 방지하기 위한 전역 상태
+let isGlobalDragging = false;
 
 export default function GalleryScene({ projects, onSelectProject }: GallerySceneProps) {
   const [index, setIndex] = useState(0);
@@ -39,35 +52,53 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
     setAutoPlay(false);
   };
 
+  // 모바일/PC 통용 드래그 이벤트 (드래그 종료 시 1회만 변경되도록 수정)
+  const bind = useDrag(({ active, movement: [mx], last }) => {
+    isGlobalDragging = active; 
+
+    if (active) {
+      document.body.style.cursor = ''; 
+      setAutoPlay(false);
+    }
+
+    if (last) {
+      if (Math.abs(mx) > 50) {
+        if (mx > 0) {
+          handlePrev();
+        } else {
+          handleNext();
+        }
+      }
+    }
+  }, { 
+    axis: 'x', 
+    filterTaps: true
+  });
+
   return (
-    <div className="w-full h-[500px] md:h-[800px] bg-[#e0e0e0] relative group overflow-hidden touch-none">
-      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 0, 6.5], fov: 40 }}>
+    <div 
+      {...bind()} 
+      className="w-full h-[500px] md:h-[800px] bg-[#e0e0e0] relative group overflow-hidden cursor-grab active:cursor-grabbing"
+      style={{ touchAction: 'pan-y' }}
+    >
+      <Canvas 
+        dpr={[1, 1.5]} 
+        shadows 
+        camera={{ position: [0, 0, 6.5], fov: 40 }}
+      >
         <Suspense fallback={null}>
           <Scene
             projects={projects}
             currentIndex={index}
             onSelectProject={onSelectProject}
-            setIndex={setIndex}
-            setAutoPlay={setAutoPlay}
-            handlePrev={handlePrev}
-            handleNext={handleNext}
           />
         </Suspense>
       </Canvas>
 
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-between px-4 md:px-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <button onClick={handlePrev} className="pointer-events-auto p-2 md:p-4 rounded-full bg-black/5 hover:bg-black/10 text-gray-800 transition-all backdrop-blur-sm">
-          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
-        </button>
-        <button onClick={handleNext} className="pointer-events-auto p-2 md:p-4 rounded-full bg-black/5 hover:bg-black/10 text-gray-800 transition-all backdrop-blur-sm">
-          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
-        </button>
-      </div>
-
       <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex items-center gap-3 z-10">
         <button
-          onClick={() => setAutoPlay(!autoPlay)}
-          className="p-2 md:p-3 rounded-full bg-white/80 hover:bg-white shadow-lg text-gray-800 transition-all"
+          onClick={(e) => { e.stopPropagation(); setAutoPlay(!autoPlay); }}
+          className="p-2 md:p-3 rounded-full bg-white/80 hover:bg-white shadow-lg text-gray-800 transition-all pointer-events-auto"
         >
           {autoPlay ? <Pause className="w-4 h-4 md:w-5 md:h-5" /> : <Play className="w-4 h-4 md:w-5 md:h-5" />}
         </button>
@@ -76,29 +107,25 @@ export default function GalleryScene({ projects, onSelectProject }: GalleryScene
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Scene({ projects, currentIndex, setAutoPlay, onSelectProject, handlePrev, handleNext }: any) {
-  const { viewport } = useThree();
-  // 5 이하를 모바일/태블릿 세로 모드로 간주함
-  const isMobile = viewport.width < 5; 
-  // 모바일 뷰에서는 옆 작품이 살짝 보이도록 뷰포트 너비 기준으로 간격 조정
-  const gap = isMobile ? Math.max(viewport.width * 1.2, 4) : GAP;
+interface SceneProps {
+  projects: Project[];
+  currentIndex: number;
+  onSelectProject: (p: Project) => void;
+}
 
+function Scene({ projects, currentIndex, onSelectProject }: SceneProps) {
+  const { size } = useThree();
+  
+  // 카메라의 회전(오작동 원인)과 무관하게 고정된 기준 3D 뷰포트 크기를 계산하여 절대적으로 안정된 모바일 분기를 생성
+  const distance = 6.5;
+  const vFov = (40 * Math.PI) / 180;
+  const stableVHeight = 2 * Math.tan(vFov / 2) * distance;
+  const stableVWidth = stableVHeight * (size.width / size.height);
+
+  const isMobile = stableVWidth < 5; 
+  const gap = isMobile ? Math.max(stableVWidth * 1.2, 4) : GAP;
+  
   const lightGroupRef = useRef<THREE.Group>(null);
-
-  const bind = useDrag(({ down, movement: [mx], direction: [dx], cancel }) => {
-    if (down) {
-      setAutoPlay(false);
-    }
-    if (Math.abs(mx) > viewport.width / 4) {
-      cancel();
-      if (dx > 0) {
-        handlePrev();
-      } else {
-        handleNext();
-      }
-    }
-  });
 
   useFrame((state, delta) => {
     const targetX = currentIndex * gap;
@@ -110,25 +137,11 @@ function Scene({ projects, currentIndex, setAutoPlay, onSelectProject, handlePre
   });
 
   return (
-    <group {...bind()}>
+    <group>
       <ambientLight intensity={0.4} />
       <group ref={lightGroupRef}>
-        <spotLight
-          position={[0, 4, 3]}
-          angle={0.6}
-          penumbra={0.5}
-          intensity={2.5}
-          castShadow
-          color="#fffaeb"
-        />
-        <spotLight
-          position={[1.5, 3, 2]}
-          angle={0.5}
-          penumbra={0.7}
-          intensity={1.0}
-          castShadow
-          color="#f0f5ff"
-        />
+        <spotLight position={[0, 4, 3]} angle={0.6} penumbra={0.5} intensity={2.5} castShadow color="#fffaeb" />
+        <spotLight position={[1.5, 3, 2]} angle={0.5} penumbra={0.7} intensity={1.0} castShadow color="#f0f5ff" />
       </group>
       <mesh position={[currentIndex * gap, 0, -0.5]} receiveShadow>
         <planeGeometry args={[100, 20]} />
@@ -144,13 +157,14 @@ function Scene({ projects, currentIndex, setAutoPlay, onSelectProject, handlePre
       </mesh>
       <group>
         {projects.map((project: Project, i: number) => (
-          <Frame
-            key={project.id}
-            project={project}
-            position={[i * gap, 0.2, 0]}
-            onSelect={onSelectProject}
-            isMobile={isMobile}
-          />
+          <FrameErrorBoundary key={project.id}>
+            <Frame
+              project={project}
+              position={[i * gap, 0.2, 0]}
+              onSelect={onSelectProject}
+              isMobile={isMobile}
+            />
+          </FrameErrorBoundary>
         ))}
       </group>
       <Environment preset="city" blur={1} />
@@ -158,15 +172,69 @@ function Scene({ projects, currentIndex, setAutoPlay, onSelectProject, handlePre
   );
 }
 
+// Custom hook to safely load textures even if the URL (like an S3 presigned URL) has expired
+function useSafeTexture(url: string) {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+    const loader = new THREE.TextureLoader();
+    
+    loader.load(
+      url,
+      (loadedTex) => setTexture(loadedTex),
+      undefined,
+      (error) => {
+        console.error(`S3 Image URL Expired or load failed for: ${url}`, error);
+        const canvas = document.createElement("canvas");
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#cccccc";
+          ctx.fillRect(0, 0, 1, 1);
+        }
+        const fallbackTex = new THREE.CanvasTexture(canvas);
+        setTexture(fallbackTex);
+      }
+    );
+  }, [url]);
+
+  return texture;
+}
+
+import React from "react";
+class FrameErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
 function Frame({ project, position, onSelect, isMobile }: { project: Project, position: [number, number, number], onSelect: (p: Project) => void, isMobile: boolean }) {
-  const { viewport } = useThree();
-  const texture = useLoader(TextureLoader, project.thumbnailUrl || "");
-  const aspect = texture.image.width / texture.image.height;
+  const { size } = useThree();
+  const safeTexture = useSafeTexture(project.thumbnailUrl || "");
   
-  // 모바일 환경을 고려하여 뷰포트(화면) 크기에 비례하게 최대 크기 설정
-  const MAX_WIDTH = isMobile ? viewport.width * 0.8 : 3.8;
-  // 세로 콘텐츠가 너무 길어지는 것을 방지
-  const BASE_HEIGHT = isMobile ? viewport.height * 0.42 : 2.8;
+  // 카메라 회전 중 크기가 폭주하지 않도록 안정된 뷰포트 크기를 계산
+  const distance = 6.5;
+  const vFov = (40 * Math.PI) / 180;
+  const stableVHeight = 2 * Math.tan(vFov / 2) * distance;
+  const stableVWidth = stableVHeight * (size.width / size.height);
+
+  const MAX_WIDTH = isMobile ? stableVWidth * 0.8 : 3.8;
+  const BASE_HEIGHT = isMobile ? stableVHeight * 0.42 : 2.8;
+
+  const imageObj = safeTexture?.image as HTMLImageElement | undefined;
+  const aspect = imageObj && imageObj.width && imageObj.height ? imageObj.width / imageObj.height : 1.5;
 
   let contentWidth = BASE_HEIGHT * aspect;
   let contentHeight = BASE_HEIGHT;
@@ -176,22 +244,21 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
     contentHeight = MAX_WIDTH / aspect;
   }
   
-  // --- 고급 미술관 액자 프레임(3중 레이어) 구성 ---
-  // 1. 매트보드 (Mat Board) : 작품을 여유롭게 감싸는 따뜻한 보드 여백구간
   const matSize = isMobile ? 0.08 : 0.18; 
-  // 2. 외부 베젤 프레임 (Outer Frame) : 가장 밖에서 감싸주는 얇고 단단한 테두리
   const frameSize = isMobile ? 0.02 : 0.035; 
 
   const matW = contentWidth + matSize * 2;
   const matH = contentHeight + matSize * 2;
-
   const outerW = matW + frameSize * 2;
   const outerH = matH + frameSize * 2;
 
-  const frameThickness = 0.08;
-  // ------------------------------------------------
+  const maxMatW = MAX_WIDTH + matSize * 2;
+  const maxMatH = BASE_HEIGHT + matSize * 2;
+  const maxOuterW = maxMatW + frameSize * 2;
+  const maxOuterH = maxMatH + frameSize * 2;
 
-  // 모바일에서는 글씨를 조금 더 크게 설정하여 가독성 확보
+  const frameThickness = 0.08;
+
   const sizes = {
     title: isMobile ? 0.10 : 0.08,
     period: isMobile ? 0.045 : 0.04,
@@ -199,16 +266,13 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
     desc: isMobile ? 0.045 : 0.04,
   };
 
-  // 모바일 캡션 높이를 글자 간격(line-height 및 sizes)에 대응하게 확장
-  const captionWidth = isMobile ? outerW : 1.4;
+  const captionWidth = isMobile ? maxOuterW : 1.4;
   const captionHeight = isMobile ? 1.05 : 0.9; 
-  const captionX = isMobile ? 0 : (outerW / 2) + (captionWidth / 2) + 0.3;
-  const captionY = isMobile ? -(outerH / 2) - (captionHeight / 2) - 0.2 : -0.2;
+  const captionX = isMobile ? 0 : (maxOuterW / 2) + (captionWidth / 2) + 0.3;
+  const captionY = isMobile ? -(maxOuterH / 2) - (captionHeight / 2) - 0.2 : -0.2;
 
-  // 모바일 배치를 위한 Y 위치 상단 마진 (아래로 치우치는 것을 방지)
   const groupYOffset = isMobile ? 0.35 : 0;
   
-  // 글자 Y 좌표 (위쪽 기준) - 세로 여백 최적화
   const posTitleY = 0;
   const posPeriodY = isMobile ? -0.17 : -0.14;
   const posTagsY = isMobile ? -0.25 : -0.21;
@@ -221,71 +285,60 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
   return (
     <group position={[position[0], position[1] + groupYOffset, position[2]]}>
       
-      {/* 레이어 1 : 베젤 역할을 하는 가장 바깥 프레임 (오닉스 블랙 메탈 질감) */}
-      <RoundedBox args={[outerW, outerH, frameThickness]} radius={0.015} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
+      {/* 🚀 성능 최적화: 초기 렌더링을 엄청나게 지연시키는 복잡한 연산인 RoundedBox(ExtrudeGeometry)를 Box로 교체하여 수십 배 빠르게 렌더링되게 만듭니다. */}
+      <Box args={[outerW, outerH, frameThickness]} position={[0, 0, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#171717" roughness={0.6} metalness={0.4} />
-      </RoundedBox>
+      </Box>
 
-      {/* 레이어 2 : 매트 보드 (Mat Board) 
-          Z-Fighting (깜빡임 현상) 방지를 위해 앞면(Z) 단차를 0.01씩 넉넉히 확보합니다. */}
       <Box args={[matW, matH, 0.01]} position={[0, 0, frameThickness / 2 + 0.01]} receiveShadow>
         <meshStandardMaterial color="#fcfcfc" roughness={0.9} metalness={0.05} />
       </Box>
 
-      {/* 레이어 3 : 사진 인화지 판 
-          이전 레이어보다 0.01 더 띄워 겹침을 원천적으로 차단 */}
       <Box args={[contentWidth, contentHeight, 0.006]} position={[0, 0, frameThickness / 2 + 0.02]}>
         <meshStandardMaterial color="#e0e0e0" />
       </Box>
 
-      {/* 레이어 4 : 실제 이미지 작품 
-          역시 0.01 더 띄워 깔끔한 렌더링 유지 */}
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <Image
-        url={project.thumbnailUrl || ""}
-        scale={[contentWidth, contentHeight]}
-        position={[0, 0, frameThickness / 2 + 0.03]} // 사진 보드 바로 위
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(project);
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          document.body.style.cursor = 'pointer';
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          document.body.style.cursor = 'auto';
-        }}
-        toneMapped={false}
-      />
+      {safeTexture && (
+        <mesh 
+          position={[0, 0, frameThickness / 2 + 0.03]}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isGlobalDragging) onSelect(project);
+          }}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            if (!isGlobalDragging) document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={(e) => {
+            e.stopPropagation();
+            document.body.style.cursor = '';
+          }}
+        >
+          <planeGeometry args={[contentWidth, contentHeight]} />
+          <meshBasicMaterial map={safeTexture} toneMapped={false} />
+        </mesh>
+      )}
       
-      {/* 캡션(Description Panel) 영역 클릭 처리 추가 */}
       <group 
         position={[captionX, captionY, 0.015]}
         onClick={(e) => {
           e.stopPropagation();
-          onSelect(project); 
+          if (!isGlobalDragging) onSelect(project); 
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = 'pointer';
+          if (!isGlobalDragging) document.body.style.cursor = 'pointer';
         }}
         onPointerOut={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = 'auto';
+          document.body.style.cursor = '';
         }}
       > 
         <mesh castShadow receiveShadow>
           <boxGeometry args={[captionWidth, captionHeight, 0.02]} /> 
-          <meshStandardMaterial 
-            color="#ffffff" 
-            roughness={0.7} 
-            metalness={0.05} 
-          /> 
+          <meshStandardMaterial color="#ffffff" roughness={0.7} metalness={0.05} /> 
         </mesh>
 
-        {/* 캡션 내 텍스트 정렬 영역 */}
         <group position={[-captionWidth / 2 + (isMobile ? 0.2 : 0.15), captionHeight / 2 - (isMobile ? 0.2 : 0.15), 0.012]}>
           <Text 
             position={[0, posTitleY, 0]} 
@@ -323,7 +376,6 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
             {project.tags.join(" • ")}
           </Text>
 
-          {/* 구분선 */}
           <mesh position={[(captionWidth - (isMobile ? 0.4 : 0.3)) / 2, posDividerY, 0]}>
             <planeGeometry args={[captionWidth - (isMobile ? 0.4 : 0.3), 0.002]} />
             <meshBasicMaterial color="#dcdcdc" />

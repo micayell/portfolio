@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ParsedResume, DescriptionItem } from "@/features/common/lib/notion";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
@@ -26,6 +26,7 @@ export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
   const [filter, setFilter] = useState<Category>(initialFilter);
   useEffect(() => { setFilter(initialFilter); }, [initialFilter]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
@@ -51,12 +52,33 @@ export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
     { key: "experience", label: "Experience" },
   ];
 
-  const bind = useDrag(({ movement: [mx], memo = scrollContainerRef.current?.scrollLeft }) => {
-    if (scrollContainerRef.current) {
+  const bind = useDrag(({ down, movement: [mx], memo = scrollContainerRef.current?.scrollLeft, event }) => {
+    const ev = event as React.PointerEvent | React.TouchEvent | PointerEvent | TouchEvent;
+    const isTouch = ev && (
+      ('pointerType' in ev && (ev.pointerType === 'touch' || ev.pointerType === 'pen')) ||
+      ('touches' in ev && ev.touches !== undefined)
+    );
+    
+    // 모바일(터치) 환경에서는 native scroll을 이용하도록 드래그 이벤트를 무시합니다.
+    if (isTouch) return memo;
+
+    // 마우스 드래그일 때만 스크롤 위치를 업데이트합니다.
+    if (Math.abs(mx) > 3) {
+      isDragging.current = true;
+    }
+
+    if (!down) {
+      // 드래그 종료 시 약간의 딜레이 후 클릭이 가능하게 상태를 되돌립니다.
+      setTimeout(() => {
+        isDragging.current = false;
+      }, 50);
+    }
+
+    if (scrollContainerRef.current && isDragging.current) {
       scrollContainerRef.current.scrollLeft = memo - mx;
     }
     return memo;
-  }, { axis: 'x' });
+  }, { axis: 'x', filterTaps: true });
 
   return (
     <section id="resume" className="py-12 md:py-20 max-w-4xl mx-auto px-4 sm:px-6">
@@ -72,8 +94,17 @@ export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
           <div 
             {...bind()}
             ref={scrollContainerRef}
+            onClickCapture={(e) => {
+              if (isDragging.current) {
+                e.stopPropagation();
+              }
+            }}
             className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2 cursor-grab active:cursor-grabbing"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', touchAction: 'pan-y' }}
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none'
+              // 터치 스크롤(스와이프)를 막던 touchAction: 'pan-y' 제거
+            }}
           >
             {categories.map((cat) => (
               <button
@@ -94,7 +125,7 @@ export default function Resume({ data, initialFilter = "all" }: ResumeProps) {
 
       <div className="relative space-y-8 before:absolute before:inset-0 before:ml-4 sm:before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent dark:before:via-zinc-700">
         <AnimatePresence mode="popLayout">
-          {filteredItems.map((item, index) => (
+          {filteredItems.map((item) => (
             <motion.div
               key={item.id}
               layout

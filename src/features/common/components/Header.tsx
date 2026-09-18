@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/features/common/components/ThemeToggle";
 import { NAV_ITEMS } from "@/features/common/constants/nav";
 import { Menu, X } from "lucide-react";
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment } from 'react';
 
 interface HeaderProps {
@@ -60,7 +60,7 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
       {/* Mobile Menu (Headless UI Dialog) */}
       <Transition appear show={isMenuOpen} as={Fragment}>
         <Dialog as="div" className="relative z-[9999]" onClose={() => setIsMenuOpen(false)}>
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0"
@@ -70,11 +70,11 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
             leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-          </Transition.Child>
+          </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+              <TransitionChild
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -83,10 +83,11 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 sr-only">
+                {/* 패널에 relative 속성을 추가하여 내부 절대 좌표버튼(absolute)이 패널에 찰싹 붙어있도록 고정 */}
+                <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
+                  <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 sr-only">
                     Navigation Menu
-                  </Dialog.Title>
+                  </DialogTitle>
                   <div className="mt-2">
                     <ul className="flex flex-col items-center space-y-8 text-lg uppercase tracking-widest text-gray-500 dark:text-gray-400">
                       {NAV_ITEMS.map((item) => (
@@ -108,17 +109,18 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
                     <ThemeToggle />
                   </div>
 
+                  {/* 닫기 엑스버튼이 요동치는 걸 방지하기 위해 스타일을 둥근 아이콘 핏으로 안정화 */}
                   <div className="absolute top-4 right-4">
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      className="inline-flex items-center justify-center p-2 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 focus:outline-none transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <X size={20} />
                     </button>
                   </div>
-                </Dialog.Panel>
-              </Transition.Child>
+                </DialogPanel>
+              </TransitionChild>
             </div>
           </div>
         </Dialog>

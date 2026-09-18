@@ -12,7 +12,7 @@ interface SkillsProps {
 const PREFERRED_ORDER = ["Programming", "BE", "FE", "DB", "Data", "Design"];
 
 export default function Skills({ skills }: SkillsProps) {
-    const categories = useMemo(() => {
+  const categories = useMemo(() => {
     const keys = Object.keys(skills);
     keys.sort((a, b) => {
       const idxA = PREFERRED_ORDER.indexOf(a);
@@ -31,8 +31,9 @@ export default function Skills({ skills }: SkillsProps) {
   }, [skills]);
   const [activeTab, setActiveTab] = useState("All");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
-    const sortedEntries: [string, string[]][] = useMemo(() => {
+  const sortedEntries: [string, string[]][] = useMemo(() => {
     const sortedKeys = categories.filter(c => c !== "All");
     if (activeTab === "All") {
       return sortedKeys.map(key => [key, skills[key]]);
@@ -40,12 +41,33 @@ export default function Skills({ skills }: SkillsProps) {
     return [[activeTab, skills[activeTab]]];
   }, [activeTab, categories, skills]);
 
-  const bind = useDrag(({ movement: [mx], memo = scrollContainerRef.current?.scrollLeft }) => {
-    if (scrollContainerRef.current) {
+  const bind = useDrag(({ down, movement: [mx], memo = scrollContainerRef.current?.scrollLeft, event }) => {
+    const ev = event as React.PointerEvent | React.TouchEvent | PointerEvent | TouchEvent;
+    const isTouch = ev && (
+      ('pointerType' in ev && (ev.pointerType === 'touch' || ev.pointerType === 'pen')) ||
+      ('touches' in ev && ev.touches !== undefined)
+    );
+    
+    // 모바일(터치) 환경에서는 native scroll을 이용하도록 드래그 이벤트를 무시합니다.
+    if (isTouch) return memo;
+
+    // 마우스 드래그일 때만 스크롤 위치를 업데이트합니다.
+    if (Math.abs(mx) > 3) {
+      isDragging.current = true;
+    }
+
+    if (!down) {
+      // 드래그 종료 시 약간의 딜레이 후 클릭이 가능하게 상태를 되돌립니다.
+      setTimeout(() => {
+        isDragging.current = false;
+      }, 50);
+    }
+
+    if (scrollContainerRef.current && isDragging.current) {
       scrollContainerRef.current.scrollLeft = memo - mx;
     }
     return memo;
-  }, { axis: 'x' });
+  }, { axis: 'x', filterTaps: true });
 
   return (
     <section id="skills" className="py-12 md:py-20 max-w-5xl mx-auto px-4 sm:px-6">
@@ -61,8 +83,13 @@ export default function Skills({ skills }: SkillsProps) {
           <div
             {...bind()}
             ref={scrollContainerRef}
+            onClickCapture={(e) => {
+              if (isDragging.current) {
+                e.stopPropagation();
+              }
+            }}
             className="flex overflow-x-auto whitespace-nowrap gap-3 pb-2 cursor-grab active:cursor-grabbing"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', touchAction: 'pan-y' }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {categories.map((cat) => (
               <button
