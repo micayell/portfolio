@@ -49,7 +49,7 @@ export default function Intro({ onEnter }: IntroProps) {
   return (
     <section
       onClick={onEnter}
-      className="relative h-screen flex flex-col items-center justify-center bg-[#f0f0f0] dark:bg-zinc-950 overflow-hidden cursor-pointer"
+      className="relative h-screen flex flex-col items-center justify-center bg-[#fafafa] dark:bg-zinc-950 overflow-hidden cursor-pointer"
     >
       {/* 배경 데코레이션 */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
