@@ -1,112 +1,84 @@
-# Interactive Portfolio (Next.js, Three.js, Notion CMS)
+﻿# Interactive 3D Portfolio
+
+Next.js, React Three Fiber, Notion API, 그리고 AI(Groq)를 결합하여 만든 **인터랙티브 3D 포트폴리오**입니다.  
+사용자는 정적인 텍스트를 읽는 대신 3D 공간을 탐색하고, 챗봇과 대화하며, 노션으로 실시간 업데이트되는 이력을 확인할 수 있습니다.
 
 <div align="center">
   <p>
-    <strong><a href="https://gukkaebi-portfolio.vercel.app/" target="_blank">Live Demo</a></strong>
+    <strong><a href="https://gukkaebi-portfolio.vercel.app/" target="_blank">Live Demo 방문하기</a></strong>
   </p>
 </div>
 
-<br/>
+---
 
-이 프로젝트는 Next.js 기반으로 제작된 인터랙티브 포트폴리오 웹사이트입니다. 정적인 정보 제공을 넘어, `react-three-fiber`를 활용한 3D 프로젝트 갤러리와 Notion API를 연동한 AI 챗봇을 통해 사용자 상호작용을 강화하는 데 중점을 두었습니다. 모든 프로젝트 데이터와 이력서는 Notion 데이터베이스를 통해 동적으로 관리됩니다.
+## 🎯 설계 철학 (Macroscopic View)
+
+이 프로젝트는 단순한 정보 나열을 넘어 **기술적 깊이와 사용자 경험(UX)의 융합**을 목표로 합니다.
+프론트엔드 아키텍처부터 백엔드 데이터 パ이프라인까지, 확장성과 유지보수성을 극대화하는 방향으로 설계되었습니다.
+
+### 1. Feature-Sliced Design (FSD) 아키텍처 도입
+- 도메인 주도 설계(DDD)에 기반한 **FSD (Feature-Sliced Design)** 구조를 채택하여 컴포넌트와 비즈니스 로직을 `src/features/` 하위에 도메인별(`resume`, `chat`, `projects`, `common` 등)로 완벽히 분리했습니다.
+- Next.js의 `App Router (src/app/)`는 오직 라우팅 기점 역할만 수행하며, 프로젝트가 비대해져도 높은 유지보수성과 결합도 최소화를 보장합니다.
+
+### 2. 컴포저블 & 실시간 CMS (Notion API)
+- 포트폴리오의 모든 데이터(프로젝트, 이력서, 태그 등)는 **Notion을 Headless CMS로 활용**하여 관리됩니다.
+- 코드를 수정하고 배포할 필요 없이, Notion 페이지를 수정하는 즉시 ISR 및 동적(On-Demand) 렌더링에 의해 뷰에 반영되는 유연한 데이터 파이프라인을 구축했습니다.
+
+### 3. 물리 기반 3D 인터랙션 (R3F)
+- 평면적인 갤러리를 넘어서, `react-three-fiber`를 이용한 3D 공간과 카메라 보간(Interpolation) 기법을 활용해 사용자에게 압도적이고 몰입감 있는 갤러리 뷰(Gallery Scene)를 제공합니다.
+
+### 4. RAG 기반 AI 비서 탑재
+- 사용자가 포트폴리오에 대해 묻거나 기술 역량을 검증하기 위해 질문할 수 있도록 **AI 챗봇**을 탑재했습니다.
+- 노션 내부 데이터 기반의 RAG(Retrieval-Augmented Generation) 패턴과 Groq API를 결합하여 초고속 스트리밍 답변을 제공합니다.
 
 ---
 
-## 주요 기능
+## 🛠 Tech Stack
 
--   **인터랙티브 3D 갤러리**: `react-three-fiber`와 `drei`를 사용하여 프로젝트를 3D 공간에 전시하고, 사용자가 직접 탐색하며 둘러볼 수 있는 환경을 제공합니다.
--   **AI 챗봇 어시스턴트**: 포트폴리오에 대한 정보를 대화형으로 제공하는 AI 챗봇을 구현했습니다. Next.js API Route, Vercel AI SDK, 그리고 Groq API를 활용하여 빠른 응답 속도를 확보했습니다.
--   **Notion 기반 Headless CMS**: 프로젝트, 이력서, 기술 스택 등 웹사이트의 모든 콘텐츠를 Notion 데이터베이스에서 관리합니다. 이를 통해 코드 수정 없이 실시간으로 콘텐츠 업데이트가 가능합니다.
--   **반응형 디자인**: 데스크톱부터 모바일 기기까지 모든 화면 크기에서 최적의 사용자 경험을 제공하도록 설계되었습니다.
--   **테마 전환**: 사용자의 시스템 설정에 따라 다크/라이트 모드를 자동으로 적용하며, 수동 전환도 지원합니다.
--   **동적 애니메이션**: `framer-motion`을 활용하여 페이지 전환과 컴포넌트 표시에 부드럽고 직관적인 애니메이션을 적용했습니다.
-
----
-
-## 기술 스택
-
-| Category      | Technologies                                                                                             |
-| :------------ | :------------------------------------------------------------------------------------------------------- |
-| **Frontend**  | `Next.js`, `React`, `TypeScript`, `Tailwind CSS`                                                         |
-| **3D**        | `Three.js`, `React Three Fiber`, `Drei`, `Maath`                                                         |
-| **Animation** | `Framer Motion`, `@use-gesture/react`                                                                    |
-| **Backend**   | `Next.js API Routes`, `Vercel AI SDK`, `Groq API`                                                        |
-| **CMS**       | `Notion API`                                                                                             |
-| **Deployment**| `Vercel`                                                                                                 |
-| **Analytics** | `@vercel/analytics`                                                                                      |
+| Category | Technologies |
+| :--- | :--- |
+| **Frontend** | `Next.js (App Router)`, `React`, `TypeScript`, `Tailwind CSS`, `Framer Motion` |
+| **3D & WebGL**| `Three.js`, `React Three Fiber`, `Drei`, `Maath` |
+| **Backend / AI** | `Next.js API Routes`, `Vercel AI SDK`, `Groq API (Llama-3)`, `RAG Context` |
+| **Data / CMS** | `Notion API` (Headless CMS) |
 
 ---
 
-## 핵심 구현 및 문제 해결
+## 📚 상세 기술 문서 안내
 
-개발 과정에서 마주한 주요 문제들과 이를 해결하기 위해 적용한 기술적인 접근 방식입니다.
+세부적인 기술 결정 배경과 깊이 있는 최적화/이슈 해결 과정은 아래 별도 문서로 분리하여 관리하고 있습니다.
 
-### 1. Notion을 Headless CMS로 활용한 동적 콘텐츠 관리
-
-**문제 인식:** 포트폴리오 콘텐츠(프로젝트, 이력 등)를 업데이트할 때마다 코드를 수정하고 다시 배포하는 과정의 비효율성을 개선하고자 했습니다.
-
-**해결 방안:** Notion을 Headless CMS로 도입하여 콘텐츠와 코드를 분리했습니다.
-
--   **Notion API 연동**: `src/features/common/lib/notion.ts`에 Notion API와 통신하는 로직을 모듈화하여 재사용성을 높였습니다. Notion 데이터베이스 ID와 API 키만으로 콘텐츠를 가져올 수 있도록 설계했습니다.
--   **데이터 파서 구현**: Notion API가 반환하는 복잡한 Block 구조의 데이터를 프론트엔드에서 사용하기 쉬운 JSON 형태로 변환하는 파서를 직접 구현했습니다. 특히, 중첩된 블록(들여쓰기, 컬럼 등)을 재귀적으로 탐색하여 원본 문서의 계층 구조를 유지했습니다.
--   **성능 최적화 (SSG)**: `getStaticProps` (App Router의 `generateStaticParams`)를 활용하여 빌드 시점에 Notion 데이터를 가져와 정적 페이지로 생성했습니다. 이를 통해 빠른 페이지 로딩 속도(FCP)와 우수한 SEO 점수를 확보했습니다.
-
-**결과:** 외부 API를 활용한 서비스 통합 능력, 복잡한 데이터를 목적에 맞게 가공하는 능력, 그리고 웹 성능 최적화(SSG)에 대한 깊은 이해를 증명할 수 있었습니다.
-
-### 2. `react-three-fiber`를 이용한 인터랙티브 3D 갤러리
-
-**문제 인식:** 일반적인 2D 그리드 레이아웃은 사용자의 흥미를 유발하기에 한계가 있다고 판단하여, 더 몰입감 있는 경험을 제공하고자 했습니다.
-
-**해결 방안:** `react-three-fiber`를 사용하여 3D 갤러리 공간을 구현했습니다.
-
--   **동적 객체 생성**: Notion에서 가져온 프로젝트 데이터를 기반으로 3D 공간에 액자(`Frame`)와 캡션을 동적으로 생성했습니다. 이미지 원본 비율에 따라 액자 크기가 자동으로 조절되도록 로직을 구현했습니다.
--   **반응형 3D 캔버스**: 모바일과 데스크톱 환경 모두에서 최적의 경험을 제공하기 위해 `useThree` 훅으로 뷰포트 너비를 감지했습니다. 모바일에서는 객체의 `scale`과 객체 간의 `gap`을 동적으로 줄여 화면에 맞게 렌더링했습니다.
--   **모바일 터치 인터랙션**: `react-use-gesture` 라이브러리를 도입하여, 모바일 사용자가 터치 드래그(스와이프)를 통해 직관적으로 갤러리를 탐색할 수 있도록 UX를 개선했습니다.
-
-**결과:** Three.js와 같은 복잡한 라이브러리를 학습하고 실제 프로젝트에 적용하는 능력, 3D 공간에서의 사용자 인터랙션 및 반응형 디자인 구현 능력, 그리고 성능을 고려한 3D 렌더링 최적화 경험을 쌓았습니다.
-
-### 3. AI 챗봇 어시스턴트 구현
-
-**문제 인식:** 사용자가 포트폴리오에 대해 궁금한 점이 생겼을 때, 수동적으로 정보를 찾는 대신 즉각적인 답변을 얻을 수 있는 창구가 필요하다고 판단했습니다.
-
-**해결 방안:** Vercel AI SDK와 Groq API를 활용하여 빠른 응답 속도를 가진 AI 챗봇을 구현했습니다.
-
--   **서버리스 백엔드**: Next.js의 API Route를 사용하여 별도의 서버 없이 백엔드 로직을 구현했습니다. 사용자의 질문, 대화 기록, Notion에서 가져온 프로젝트/이력서 데이터를 함께 AI 모델에 전달하여 컨텍스트에 맞는 답변을 생성하도록 했습니다.
--   **스트리밍 응답**: Vercel AI SDK의 `StreamingTextResponse`를 사용하여, AI가 생성하는 답변을 실시간 스트리밍 형태로 프론트엔드에 전송했습니다. 이를 통해 사용자는 실제 대화처럼 즉각적인 피드백을 받을 수 있어 UX가 크게 향상되었습니다.
--   **제안 액션(Suggested Action)**: AI가 답변과 함께 특정 페이지로 이동을 제안하는 '액션'을 반환할 수 있도록 설계했습니다. 예를 들어, "프로젝트 보여줘"라는 질문에 프로젝트 갤러리로 바로 이동하는 버튼을 제공하여 사용자의 다음 행동을 유도했습니다.
-
-**결과:** 서버리스 아키텍처(API Routes)에 대한 이해 및 활용 능력, AI SDK를 활용한 LLM 기반 서비스 개발 경험, 그리고 사용자 경험을 고려한 비동기 데이터 처리 및 인터페이스 설계 능력을 갖추게 되었습니다.
+- [**TECH.md**](./TECH.md) : 각 기술 스택 선정 이유(Why)와 세부 구현 방식(How)
+- [**TROUBLESHOOTING.md**](./TROUBLESHOOTING.md) : 3D 렌더링 그림자 최적화 (O(N) ➡️ O(1)), AI 모델 종속성 탈피 및 파싱 방어, 비동기 프리로딩(Promise.all 스태거링) 등 주요 문제 해결 경험
 
 ---
 
-## 시작하기
+## 🚀 Getting Started
 
-1.  **저장소 복제**
-    ```bash
-    git clone https://github.com/your-username/your-repo-name.git
-    cd your-repo-name
-    ```
+1. **저장소 클론**
+   ```bash
+   git clone https://github.com/micayell/portfolio.git
+   cd portfolio
+   ```
 
-2.  **종속성 설치**
-    ```bash
-    npm install
-    ```
+2. **패키지 설치**
+   ```bash
+   npm install
+   ```
 
-3.  **환경 변수 설정**
-    `.env.local` 파일을 생성하고 아래 내용을 작성합니다.
-    ```env
-    # Notion
-    NOTION_API_KEY=
-    NOTION_DATABASE_ID=
-    NOTION_PORTFOLIO_PAGE_ID=
+3. **환경 변수 설정 (`.env.local`)**
+   ```env
+   # Notion (Headless CMS)
+   NOTION_API_KEY=your_notion_api_key
+   NOTION_DATABASE_ID=your_database_id
+   NOTION_PORTFOLIO_PAGE_ID=your_portfolio_page_id
 
-    # Groq AI
-    GROQ_API_KEY=
-    ```
+   # AI 설정
+   GROQ_API_KEY=your_groq_api_key
+   ```
 
-4.  **개발 서버 실행**
-    ```bash
-    npm run dev
-    ```
-
-    브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.
+4. **개발 서버 실행**
+   ```bash
+   npm run dev
+   ```
+   브라우저에서 `http://localhost:3000`에 접속하여 프로젝트를 확인할 수 있습니다.
