@@ -2,8 +2,8 @@ import { getProject, getPageContent, getProjects } from "@/features/common/lib/n
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
-// ISR: 1시간마다 데이터 갱신
-export const revalidate = 3600;
+// ISR: 50분마다 데이터 갱신
+export const revalidate = 3000;
 
 export async function generateStaticParams() {
   const projects = await getProjects();

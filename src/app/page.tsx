@@ -1,8 +1,8 @@
 ﻿import { getProjects, getPageContent, getResumeData } from "@/features/common/lib/notion";
 import ClientPage from "./ClientPage";
 
-// ISR: 1시간마다 데이터 갱신
-export const revalidate = 3600;
+// ISR: 50분마다 데이터 갱신
+export const revalidate = 3000;
 
 // 빌드 타임에 실행됨 (SSG)
 export default async function Home() {
