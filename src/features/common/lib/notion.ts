@@ -167,7 +167,7 @@ export async function getProject(slug: string): Promise<Project | null> {
 
 // 2. 페이지의 본문(블록) 내용을 가져오는 함수
 // - column_list와 column을 재귀적으로 순회하며 내부 블록을 평탄화하여 반환 (isFlatten=true)
-export async function getPageContent(blockId: string, projectId: string = "", isFlatten: boolean = true): Promise<any[]> {
+export async function getPageContent(blockId: string, projectId: string = "", isFlatten: boolean = true, depth: number = 0): Promise<any[]> {
   try {
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     
@@ -196,6 +196,8 @@ export async function getPageContent(blockId: string, projectId: string = "", is
 
         const processedBlocks = [];
     for (const obj of blocks) { const block = obj as any;
+        block.depth = depth;
+        block.depth = depth;
         // [컬럼 레이아웃 처리] column_list -> column -> children
         if (block.type === 'column_list') {
             const columns = await getPageContent(block.id, projectId, isFlatten);
@@ -225,7 +227,14 @@ export async function getPageContent(blockId: string, projectId: string = "", is
         if (block.has_children && block.type !== 'column_list' && block.type !== 'column') {
           // Add a small delay to respect Notion's 3 req/sec limit deeply nested
           await new Promise(resolve => setTimeout(resolve, 350));
-          (block as any).children = await getPageContent(block.id, projectId, isFlatten);
+          const children = await getPageContent(block.id, projectId, isFlatten, (depth || 0) + 1);
+          if (isFlatten) {
+            processedBlocks.push(block);
+            processedBlocks.push(...children);
+            continue;
+          } else {
+            (block as any).children = children;
+          }
         }
 
         processedBlocks.push(block);
@@ -435,7 +444,7 @@ export async function getResumeData(): Promise<ParsedResume> {
                }
             } else {
                if (data.experience.length > 0) {
-                 data.experience[data.experience.length - 1].desc.push({ text, depth: 0 });
+                 data.experience[data.experience.length - 1].desc.push(...collectDesc([block], 0));
                }
             }
           }
@@ -492,7 +501,7 @@ export async function getResumeData(): Promise<ParsedResume> {
                }
             } else {
                if (data.workExperience.length > 0) {
-                 data.workExperience[data.workExperience.length - 1].desc.push({ text, depth: 0 });
+                 data.workExperience[data.workExperience.length - 1].desc.push(...collectDesc([block], 0));
                }
             }
           }

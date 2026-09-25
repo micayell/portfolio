@@ -71,137 +71,121 @@ const groupBlocks = (blocks: any[]) => {
 // --- 블록 렌더러 ---
 const RenderBlock = ({ block }: { block: any }) => {
   const { type } = block;
+  const depth = block.depth || 0;
   const value = block[type];
 
-  switch (type) {
-    case "paragraph":
-      return (
-        <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-        </p>
-      );
-    case "heading_1":
-      return (
-        <h1 className="text-3xl font-bold mt-12 mb-6 font-serif text-black dark:text-white">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-        </h1>
-      );
-    case "heading_2":
-      return (
-        <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-black dark:border-white pl-4 font-serif text-black dark:text-white">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-        </h2>
-      );
-    case "heading_3":
-      return (
-        <h3 className="text-xl font-semibold mt-6 mb-2 text-black dark:text-white">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-        </h3>
-      );
-    case "bulleted_list_item_group":
-      return (
-        <ul className="list-disc pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
-          {block.items.map((item: any) => (
-            <li key={item.id} className="leading-7">
-              {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-            </li>
-          ))}
-        </ul>
-      );
-    case "numbered_list_item_group":
-      return (
-        <ol className="list-decimal pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300">
-          {block.items.map((item: any) => (
-            <li key={item.id} className="leading-7">
-              {item[item.type].rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-            </li>
-          ))}
-        </ol>
-      );
-    case "bulleted_list_item":
-    case "numbered_list_item":
-      // 그룹화되지 않은 단일 아이템의 경우 (안전 장치)
-      const isNumbered = type === "numbered_list_item";
-      const ListTag = isNumbered ? "ol" : "ul";
-      const listClass = isNumbered ? "list-decimal" : "list-disc";
-      return (
-        <ListTag className={`${listClass} pl-6 mb-4 space-y-1 text-gray-700 dark:text-gray-300`}>
-          <li className="leading-7">
+  const renderContent = () => {
+    switch (type) {
+      case "paragraph":
+        return (
+          <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-          </li>
-        </ListTag>
-      );
-    case "image":
-      const imageUrl = value.type === "external" ? value.external.url : value.file.url;
-      const caption = value.caption?.[0]?.plain_text || "";
-      return (
-        <figure className="my-8 flex flex-col items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={caption || "project image"}
-            className="rounded-sm shadow-md border dark:border-gray-800 max-h-[600px] w-auto object-contain"
-          />
-          {caption && <figcaption className="text-gray-500 mt-2 text-xs text-center font-serif italic">{caption}</figcaption>}
-        </figure>
-      );
-    case "divider":
-      return <hr className="my-12 border-t border-gray-200 dark:border-gray-800" />;
-    case "quote":
-      return (
-        <blockquote className="border-l-2 border-black dark:border-white pl-6 py-2 my-8 italic text-lg text-gray-700 dark:text-gray-300 font-serif bg-gray-50 dark:bg-zinc-900">
-          {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
-        </blockquote>
-      );
-    case "callout":
-      return (
-        <div className="flex p-6 my-6 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-sm">
-          <div className="mr-4 text-2xl">{value.icon?.emoji || "💡"}</div>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
+          </p>
+        );
+      case "heading_1":
+        return (
+          <h1 className="text-3xl font-bold mt-12 mb-6 font-serif text-black dark:text-white">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </h1>
+        );
+      case "heading_2":
+        return (
+          <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-black dark:border-white pl-4 font-serif text-black dark:text-white">
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </h2>
+        );
+      case "heading_3":
+        return (
+          <h3 className="text-xl font-semibold mt-6 mb-2 text-black dark:text-white">
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </h3>
+        );
+      case "bulleted_list_item":
+        return (
+          <div className="flex mb-1 items-start">
+            <span className="mr-2 text-gray-700 dark:text-gray-300">{depth === 0 ? "•" : depth === 1 ? "-" : "◦"}</span>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            </div>
           </div>
-        </div>
-      );
-    case "column_list":
-      return (
-        <div className="flex flex-col md:flex-row gap-6 my-6 w-full">
-          {groupBlocks(block.children || []).map((col: any) => (
-            <RenderBlock key={col.id} block={col} />
-          ))}
-        </div>
-      );
-    case "column":
-      return (
-        <div className="flex-1 min-w-0">
-          {groupBlocks(block.children || []).map((child: any) => (
-            <RenderBlock key={child.id} block={child} />
-          ))}
-        </div>
-      );
-    case "table":
-      return (
-        <div className="overflow-x-auto my-8">
-          <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-800">
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {block.children?.map((row: any, rowIndex: number) => (
-                <tr key={row.id} className={rowIndex === 0 && block.table.has_column_header ? "bg-gray-50 dark:bg-zinc-900 font-semibold" : ""}>
-                  {row.table_row.cells.map((cell: any[], cellIndex: number) => (
-                    <td 
-                      key={cellIndex} 
-                      className={`p-4 border-r border-gray-200 dark:border-gray-800 last:border-r-0 text-sm ${rowIndex === 0 && block.table.has_column_header ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}
-                    >
-                      {cell.map((text: any, i: number) => <Text key={i} text={text} />)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-    default:
-      return null;
-  }
+        );
+      case "numbered_list_item":
+        return (
+          <div className="flex mb-1 items-start">
+            <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            </div>
+          </div>
+        );
+      case "image":
+        const imageUrl = value.type === "external" ? value.external.url : value.file.url;
+        const caption = value.caption?.[0]?.plain_text || "";
+        return (
+          <figure className="my-8 flex flex-col items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt={caption || "project image"}
+              className="rounded-sm shadow-md border dark:border-gray-800 max-h-[600px] w-auto object-contain"
+            />
+            {caption && <figcaption className="text-gray-500 mt-2 text-xs text-center font-serif italic">{caption}</figcaption>}
+          </figure>
+        );
+      case "divider":
+        return <hr className="my-12 border-t border-gray-200 dark:border-gray-800" />;
+      case "quote":
+        return (
+          <blockquote className="border-l-2 border-black dark:border-white pl-6 py-2 my-8 italic text-lg text-gray-700 dark:text-gray-300 font-serif bg-gray-50 dark:bg-zinc-900">
+            {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+          </blockquote>
+        );
+      case "callout":
+        return (
+          <div className="flex p-6 my-6 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-sm">
+            <div className="mr-4 text-2xl">{value.icon?.emoji || "💡"}</div>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
+            </div>
+          </div>
+        );
+      case "column_list":
+      case "column":
+        return null; // column_list는 API 레이어에서 이미 1차원 평탄화 됨
+      case "table":
+        return (
+          <div className="overflow-x-auto my-8">
+            <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-800">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                {block.children?.map((row: any, rowIndex: number) => (
+                  <tr key={row.id} className={rowIndex === 0 && block.table.has_column_header ? "bg-gray-50 dark:bg-zinc-900 font-semibold" : ""}>
+                    {row.table_row.cells.map((cell: any[], cellIndex: number) => (
+                      <td 
+                        key={cellIndex} 
+                        className={`p-4 border-r border-gray-200 dark:border-gray-800 last:border-r-0 text-sm ${rowIndex === 0 && block.table.has_column_header ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}
+                      >
+                        {cell.map((text: any, i: number) => <Text key={i} text={text} />)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const content = renderContent();
+  if (!content) return null;
+
+  return (
+    <div style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : '0' }}>
+      {content}
+    </div>
+  );
 };
 
 interface ProjectModalProps {
@@ -313,7 +297,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {/* 본문 내용 렌더링 부분 */}
                   <div className="prose dark:prose-invert max-w-none mb-10">
                     {blocks.length > 0 ? (
-                      groupBlocks(blocks).map((block: any) => <RenderBlock key={block.id} block={block} />)
+                      blocks.map((block: any) => <RenderBlock key={block.id} block={block} />)
                     ) : (
                       <p className="text-gray-500 italic text-center py-10">
                         작성된 본문 내용이 없습니다.

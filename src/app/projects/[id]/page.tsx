@@ -69,85 +69,97 @@ interface Block {
 
 const RenderBlock = ({ block }: { block: Block }) => {
   const { type } = block;
+  const depth = (block as any).depth || 0;
   const value = block[type] as BlockValue;
 
-  switch (type) {
-    case "paragraph":
-      return (
-        <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
-          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-        </p>
-      );
-    case "heading_1":
-      return (
-        <h1 className="text-3xl font-bold mt-12 mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
-          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-        </h1>
-      );
-    case "heading_2":
-      return (
-        <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-blue-500 pl-3">
-          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-        </h2>
-      );
-    case "heading_3":
-      return (
-        <h3 className="text-xl font-semibold mt-6 mb-2">
-          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-        </h3>
-      );
-    case "bulleted_list_item":
-      return (
-        <div className="flex mb-1 ml-4 items-start">
-          <span className="mr-2 text-gray-700 dark:text-gray-300">•</span>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-          </div>
-        </div>
-      );
-    case "numbered_list_item":
-      return (
-        <div className="flex mb-1 ml-4 items-start">
-          <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
-             {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-          </div>
-        </div>
-      );
-    case "image":
-      const imageUrl = value.type === "external" ? value.external?.url : value.file?.url || "";
-      const caption = value.caption?.[0]?.plain_text || "";
-      return (
-        <figure className="my-8 flex flex-col items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={imageUrl} 
-            alt={caption || "project image"} 
-            className="rounded-xl shadow-lg border dark:border-gray-800 max-h-[600px] w-auto object-contain"
-          />
-          {caption && <figcaption className="text-gray-500 mt-2 text-sm text-center">{caption}</figcaption>}
-        </figure>
-      );
-    case "divider": 
-      return <hr className="my-8 border-t border-gray-200 dark:border-gray-700" />;
-    case "quote":
-      return (
-        <blockquote className="border-l-4 border-gray-300 pl-4 py-1 my-4 italic text-gray-600 dark:text-gray-400">
-          {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
-        </blockquote>
-      );
-    case "callout":
-      return (
-        <div className="flex p-4 my-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <div className="mr-3 text-xl">{value.icon?.emoji || "💡"}</div>
-          <div className="text-gray-700 dark:text-gray-300 leading-7">
+  const renderContent = () => {
+    switch (type) {
+      case "paragraph":
+        return (
+          <p className="mb-4 text-gray-700 dark:text-gray-300 leading-7 min-h-[1.5rem]">
             {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+          </p>
+        );
+      case "heading_1":
+        return (
+          <h1 className="text-3xl font-bold mt-12 mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+            {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+          </h1>
+        );
+      case "heading_2":
+        return (
+          <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-blue-500 pl-3">
+            {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+          </h2>
+        );
+      case "heading_3":
+        return (
+          <h3 className="text-xl font-semibold mt-6 mb-2">
+            {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+          </h3>
+        );
+      case "bulleted_list_item":
+        return (
+          <div className="flex mb-1 items-start">
+            <span className="mr-2 text-gray-700 dark:text-gray-300">{depth === 0 ? "•" : depth === 1 ? "-" : "◦"}</span>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+            </div>
           </div>
-        </div>
-      );
-    default:
-      return null;
-  }
+        );
+      case "numbered_list_item":
+        return (
+          <div className="flex mb-1 items-start">
+            <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+            </div>
+          </div>
+        );
+      case "image":
+        const imageUrl = value.type === "external" ? value.external?.url : value.file?.url || "";
+        const caption = value.caption?.[0]?.plain_text || "";
+        return (
+          <figure className="my-8 flex flex-col items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={imageUrl} 
+              alt={caption || "project image"} 
+              className="rounded-xl shadow-lg border dark:border-gray-800 max-h-[600px] w-auto object-contain"
+            />
+            {caption && <figcaption className="text-gray-500 mt-2 text-sm text-center">{caption}</figcaption>}
+          </figure>
+        );
+      case "divider": 
+        return <hr className="my-8 border-t border-gray-200 dark:border-gray-700" />;
+      case "quote":
+        return (
+          <blockquote className="border-l-4 border-gray-300 pl-4 py-1 my-4 italic text-gray-600 dark:text-gray-400">
+            {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+          </blockquote>
+        );
+      case "callout":
+        return (
+          <div className="flex p-4 my-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div className="mr-3 text-xl">{value.icon?.emoji || "💡"}</div>
+            <div className="text-gray-700 dark:text-gray-300 leading-7">
+              {value.rich_text?.map((text: TextObject, i: number) => <Text key={i} text={text} />)}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const content = renderContent();
+  if (!content) return null;
+
+  return (
+    <div style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : '0' }}>
+      {content}
+    </div>
+  );
 };
 
 export default async function ProjectDetail({

@@ -17,7 +17,7 @@ export default async function Home() {
         if (project.pageId) {
           // 인덱스 * 400ms 만큼 기다렸다가 요청 (간단한 병목 우회)
           await new Promise((resolve) => setTimeout(resolve, index * 400));
-          const blocks = await getPageContent(project.pageId, project.id, false);
+          const blocks = await getPageContent(project.pageId, project.id, true);
           return { ...project, blocks };
         }
         return project;
