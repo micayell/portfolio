@@ -180,8 +180,9 @@ function useSafeTexture(url: string) {
     if (!url) return;
     const loader = new THREE.TextureLoader();
     
+    const proxyUrl = '/api/notion-image-proxy?url=' + encodeURIComponent(url);
     loader.load(
-      url,
+      proxyUrl,
       (loadedTex) => setTexture(loadedTex),
       undefined,
       (error) => {
