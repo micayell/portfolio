@@ -32,42 +32,6 @@ const Text = ({ text }: { text: any }) => {
   return <span className={styleClasses}>{text.plain_text}</span>;
 };
 
-// --- 블록 그룹화 함수 ---
-const groupBlocks = (blocks: any[]) => {
-  const grouped: any[] = [];
-  let currentList: any[] | null = null;
-  let currentListType: string | null = null;
-
-  for (const block of blocks) {
-    if (block.type === "numbered_list_item" || block.type === "bulleted_list_item") {
-      // 리스트 아이템이 연속될 때
-      if (currentListType === block.type) {
-        currentList!.push(block);
-      } else {
-        // 다른 타입의 리스트가 시작될 때 기존 리스트 저장
-        if (currentList) {
-          grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
-        }
-        currentListType = block.type;
-        currentList = [block];
-      }
-    } else {
-      // 리스트가 아닌 일반 블록이 나오면 기존 리스트 저장 후 초기화
-      if (currentList) {
-        grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
-        currentList = null;
-        currentListType = null;
-      }
-      grouped.push(block);
-    }
-  }
-  // 마지막에 남은 리스트가 있으면 저장
-  if (currentList) {
-    grouped.push({ type: currentListType + "_group", items: currentList, id: currentList[0].id + "_group" });
-  }
-  return grouped;
-};
-
 // --- 블록 렌더러 ---
 const RenderBlock = ({ block }: { block: any }) => {
   const { type } = block;
@@ -119,7 +83,9 @@ const RenderBlock = ({ block }: { block: any }) => {
           </div>
         );
       case "image":
-        const imageUrl = value.type === "external" ? value.external.url : value.file.url;
+        const rawUrl = value.type === "external" ? value.external.url : value.file.url;
+        const isAlreadyProxy = rawUrl.startsWith('/api/notion-image-proxy');
+        const imageUrl = isAlreadyProxy ? rawUrl : '/api/notion-image-proxy?url=' + encodeURIComponent(rawUrl);
         const caption = value.caption?.[0]?.plain_text || "";
         return (
           <figure className="my-8 flex flex-col items-center">
@@ -276,13 +242,11 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {/* Links */}
                   <div className="flex flex-wrap gap-3 mb-12">
                     {project.githubUrl && (
-                      // eslint-disable-next-line @next/next/no-html-link-for-pages
                       <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white dark:bg-white dark:text-black border border-transparent rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
                         <FaGithub className="w-4 h-4" /> Source Code
                       </a>
                     )}
                     {project.demoUrl && (
-                      // eslint-disable-next-line @next/next/no-html-link-for-pages
                       <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium">
                         <FaExternalLinkAlt className="w-4 h-4" /> Live Demo
                       </a>
