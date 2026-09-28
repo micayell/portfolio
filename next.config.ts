@@ -2,6 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    localPatterns: [
+      {
+        pathname: "/api/notion-image-proxy/**",
+        search: "?*",
+      },
+      {
+        pathname: "/api/notion-image-proxy",
+        search: "?*",
+      }
+    ],
     remotePatterns: [
       {
         protocol: "https",

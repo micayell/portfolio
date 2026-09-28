@@ -41,7 +41,8 @@ export default function About({ onSendMessage, profileImageUrl }: AboutProps) {
 
   const commonLinkClasses = "text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors p-2 hover:scale-110 transform duration-200 cursor-pointer";
 
-  const isExternalImage = !!profileImageUrl && profileImageUrl.startsWith("http");
+  // proxy 경로도 unoptimized로 처리해서 Next.js build prerender 에러 회피
+  const isExternalImage = !!profileImageUrl && (profileImageUrl.startsWith("http") || profileImageUrl.startsWith("/api/"));
 
   return (
     <section id="about" className="py-12 md:py-20 max-w-5xl mx-auto">
