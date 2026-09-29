@@ -83,9 +83,7 @@ const RenderBlock = ({ block }: { block: any }) => {
           </div>
         );
       case "image":
-        const rawUrl = value.type === "external" ? value.external.url : value.file.url;
-        const isAlreadyProxy = rawUrl.startsWith('/api/notion-image-proxy');
-        const imageUrl = isAlreadyProxy ? rawUrl : '/api/notion-image-proxy?url=' + encodeURIComponent(rawUrl);
+        const imageUrl = `/api/notion-image-proxy?blockId=${block.id}`;
         const caption = value.caption?.[0]?.plain_text || "";
         return (
           <figure className="my-8 flex flex-col items-center">
