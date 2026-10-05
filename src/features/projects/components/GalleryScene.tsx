@@ -291,6 +291,28 @@ function Frame({ project, position, onSelect, isMobile }: { project: Project, po
       <Box args={[outerW, outerH, frameThickness]} position={[0, 0, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#171717" roughness={0.6} metalness={0.4} />
       </Box>
+      {project.award && (
+        <group position={[
+          outerW / 2 - (isMobile ? 0.25 : 0.35), 
+          outerH / 2 - (isMobile ? 0.15 : 0.2), 
+          frameThickness / 2 + 0.015
+        ]}>
+          <Box args={[isMobile ? 0.35 : 0.5, isMobile ? 0.15 : 0.22, 0.04]} receiveShadow castShadow>
+            <meshStandardMaterial color="#FFD700" roughness={0.3} metalness={0.5} emissive="#886600" emissiveIntensity={0.4} />
+          </Box>
+          <Text 
+            position={[0, 0, 0.021]} 
+            fontSize={isMobile ? 0.07 : 0.1} 
+            color="#3a2500" 
+            anchorX="center" 
+            anchorY="middle"
+            font={fontBold}
+            letterSpacing={0.05}
+          >
+            수상
+          </Text>
+        </group>
+      )}
 
       <Box args={[matW, matH, 0.01]} position={[0, 0, frameThickness / 2 + 0.01]} receiveShadow>
         <meshStandardMaterial color="#fcfcfc" roughness={0.9} metalness={0.05} />

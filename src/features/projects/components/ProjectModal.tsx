@@ -1,4 +1,4 @@
-// src/components/ui/ProjectModal.tsx
+﻿// src/components/ui/ProjectModal.tsx
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -48,19 +48,19 @@ const RenderBlock = ({ block }: { block: any }) => {
         );
       case "heading_1":
         return (
-          <h1 className="text-3xl font-bold mt-12 mb-6 font-serif text-black dark:text-white">
+          <h1 className="text-3xl font-bold mt-8 mb-4 font-serif text-black dark:text-white">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
           </h1>
         );
       case "heading_2":
         return (
-          <h2 className="text-2xl font-bold mt-10 mb-4 border-l-4 border-black dark:border-white pl-4 font-serif text-black dark:text-white">
+          <h2 className="text-2xl font-bold mt-6 mb-3 border-l-4 border-black dark:border-white pl-4 font-serif text-black dark:text-white">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
           </h2>
         );
       case "heading_3":
         return (
-          <h3 className="text-xl font-semibold mt-6 mb-2 text-black dark:text-white">
+          <h3 className="text-xl font-semibold mt-4 mb-2 text-black dark:text-white">
             {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
           </h3>
         );
@@ -97,7 +97,7 @@ const RenderBlock = ({ block }: { block: any }) => {
           </figure>
         );
       case "divider":
-        return <hr className="my-12 border-t border-gray-200 dark:border-gray-800" />;
+        return <hr className="my-6 border-t border-gray-200 dark:border-gray-800" />;
       case "quote":
         return (
           <blockquote className="border-l-2 border-black dark:border-white pl-6 py-2 my-8 italic text-lg text-gray-700 dark:text-gray-300 font-serif bg-gray-50 dark:bg-zinc-900">

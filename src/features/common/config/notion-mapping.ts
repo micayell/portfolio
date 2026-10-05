@@ -13,7 +13,7 @@ export const NOTION_FIELD_MAPPING = {
     role: ["Role", "담당역할", "역할"],
     link: ["Github", "Link", "참고 링크"],
     demo: ["Demo", "Live", "데모 링크"],
-    award: ["Award", "Prize", "수상"],
+    award: ["Award", "Prize", "수상", "수상내역"],
     figma: ["FigmaURL", "Figma", "피그마"],
     goal: ["Goal", "목표"],
     background: ["Background", "배경"],
