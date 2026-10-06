@@ -3,6 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Project } from "@/features/projects/types/project";
 // lucide-react 대신 react-icons/fa 임포트
@@ -76,13 +77,13 @@ const RenderBlock = ({ block }: { block: any }) => {
       case "numbered_list_item":
         return (
           <div className="flex mb-1 items-start">
-            <span className="mr-2 text-gray-700 dark:text-gray-300">1.</span>
+            <span className="mr-2 text-gray-700 dark:text-gray-300">{block.listNumber || 1}.</span>
             <div className="text-gray-700 dark:text-gray-300 leading-7">
               {value.rich_text?.map((text: any, i: number) => <Text key={i} text={text} />)}
             </div>
           </div>
         );
-      case "image":
+      case "image": {
         const imageUrl = `/api/notion-image-proxy?blockId=${block.id}`;
         const caption = value.caption?.[0]?.plain_text || "";
         return (
@@ -96,6 +97,7 @@ const RenderBlock = ({ block }: { block: any }) => {
             {caption && <figcaption className="text-gray-500 mt-2 text-xs text-center font-serif italic">{caption}</figcaption>}
           </figure>
         );
+      }
       case "divider":
         return <hr className="my-6 border-t border-gray-200 dark:border-gray-800" />;
       case "quote":
@@ -158,7 +160,46 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
-  const blocks = project?.blocks || [];
+  const blocks = useMemo(() => {
+    const originalBlocks: any[] = project?.blocks || [];
+    const processed: any[] = [];
+    
+    for (let i = 0; i < originalBlocks.length; i++) {
+      const block = originalBlocks[i];
+      
+      if (block.type === "numbered_list_item") {
+        let currentNumber = 1;
+        const targetDepth = block.depth || 0;
+        
+        // 뒤로 돌아가면서 같은 depth의 numbered_list_item이 몇 개나 연속되는지 역추적
+        for (let j = i - 1; j >= 0; j--) {
+          const prevBlock = originalBlocks[j];
+          const prevDepth = prevBlock.depth || 0;
+          
+          // 더 얕은 depth(부모 레벨)를 만나면 새로운 리스트 묶음이므로 탐색 중단
+          if (prevDepth < targetDepth) break;
+          
+          // 같은 depth를 만났을 때
+          if (prevDepth === targetDepth) {
+            // 그게 번호 매기기 리스트면 이전에 계산해둔 번호에 +1 하고 탐색 종료
+            if (prevBlock.type === "numbered_list_item") {
+              currentNumber = (processed[j].listNumber || 1) + 1;
+              break;
+            } else {
+              // 번호 리스트가 아닌 다른 요소(문단, 이미지 등)가 중간에 껴있으면 흐름이 끊긴 것이므로 1번부터 새로 시작
+              break;
+            }
+          }
+          // prevDepth > targetDepth (하위 항목) 인 경우는 무시하고 계속 뒤로 탐색
+        }
+        processed.push({ ...block, listNumber: currentNumber });
+      } else {
+        processed.push(block);
+      }
+    }
+    
+    return processed;
+  }, [project?.blocks]);
 
   if (!project) return null;
 
